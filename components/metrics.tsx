@@ -1,9 +1,9 @@
 const CAPABILITIES = [
-  { label: 'IIoT / Edge Computing', value: 96 },
-  { label: 'Computer Vision', value: 92 },
-  { label: 'Advanced Analytics & ML', value: 90 },
-  { label: 'Cloud Architecture', value: 94 },
-  { label: 'SCADA / Automation', value: 88 },
+  { label: 'IIoT / Edge Computing', value: 94 },
+  { label: 'Visión Artificial', value: 96 },
+  { label: 'Analítica avanzada & ML', value: 88 },
+  { label: 'Monitoreo onPrem & Cloud', value: 98 },
+  { label: 'Soluciones Multi-Agente', value: 88 },
 ]
 
 const STACK = [
@@ -12,13 +12,13 @@ const STACK = [
   'OPC-UA',
   'MQTT',
   'Docker',
-  'Kubernetes',
+  'Node-Red',
   'AWS',
-  'Azure IoT',
+  'Javascript',
   'Grafana',
   'PostgreSQL',
-  'TimescaleDB',
-  'Next.js',
+  'InsightsHub',
+  'N8N',
 ]
 
 export function Metrics() {
@@ -33,7 +33,7 @@ export function Metrics() {
             <span className="text-muted-foreground">// CAPABILITY_INDEX</span>
           </div>
           <h2 className="mt-3 text-3xl font-bold uppercase tracking-tight text-foreground sm:text-4xl">
-            Core Competencies
+            Competencias Core
           </h2>
 
           <div className="mt-8 space-y-5">
@@ -62,7 +62,7 @@ export function Metrics() {
             <span className="text-muted-foreground">// TECH_MATRIX</span>
           </div>
           <h2 className="mt-3 text-3xl font-bold uppercase tracking-tight text-foreground sm:text-4xl">
-            Deployment Toolkit
+            Toolkit para Desarrollo
           </h2>
 
           <div className="mt-8 grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-3">

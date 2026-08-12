@@ -31,7 +31,7 @@ const CHANNELS = [
 export function Contact() {
   return (
     <section id="contact" className="hud-grid">
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
         <SectionHeading
           index="05"
           title="Establish Connection"
@@ -40,7 +40,7 @@ export function Contact() {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
           {/* CTA panel */}
-          <div className="clip-panel relative flex flex-col justify-between border border-primary/40 bg-card p-8 box-glow overflow-hidden sweep">
+          <div className="clip-panel relative flex flex-col justify-between border border-primary/40 bg-card p-6 box-glow overflow-hidden sweep sm:p-8">
             <div>
               <p className="font-mono text-xs tracking-widest text-primary">
                 {'>'} SCHEDULE_UPLINK
@@ -73,19 +73,19 @@ export function Contact() {
                   href={c.href}
                   target={c.href.startsWith('http') ? '_blank' : undefined}
                   rel={c.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                  className="group flex items-center gap-4 bg-card p-6 transition-colors hover:bg-secondary"
+                  className="group flex min-w-0 items-center gap-4 bg-card p-5 transition-colors hover:bg-secondary sm:p-6"
                 >
                   <span
-                    className="flex size-11 items-center justify-center border border-border text-primary transition-colors group-hover:border-primary"
+                    className="flex size-11 shrink-0 items-center justify-center border border-border text-primary transition-colors group-hover:border-primary"
                     aria-hidden="true"
                   >
                     <Icon className="size-5" />
                   </span>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                       {c.label}
                     </div>
-                    <div className="truncate font-mono text-sm text-foreground group-hover:text-primary">
+                    <div className="font-mono text-sm text-foreground group-hover:text-primary [overflow-wrap:anywhere]">
                       {c.value}
                     </div>
                   </div>

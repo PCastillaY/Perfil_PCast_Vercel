@@ -10,8 +10,8 @@ const STATS = [
 export function Hero() {
   return (
     <section className="relative border-b border-border">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.4fr_1fr]">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-24">
+        <div className="grid items-center gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-12">
           {/* Left: identity */}
           <div>
             <div

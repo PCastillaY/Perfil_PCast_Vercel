@@ -24,7 +24,7 @@ const STACK = [
 export function Metrics() {
   return (
     <section className="border-b border-border">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-2">
         {/* Capability meters */}
         <div>
           <div className="flex items-center gap-3 font-mono text-xs tracking-widest text-primary">

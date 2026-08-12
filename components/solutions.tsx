@@ -35,7 +35,7 @@ const SOLUTIONS = [
 export function Solutions() {
   return (
     <section id="solutions" className="border-b border-border">
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
         <SectionHeading
           index="01"
           title="Digital Solutions Stack"

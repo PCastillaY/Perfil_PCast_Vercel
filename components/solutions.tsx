@@ -6,29 +6,29 @@ const SOLUTIONS = [
     id: 'S-01',
     icon: Cpu,
     title: 'Industrial IoT',
-    desc: 'Edge-to-cloud sensor networks, PLC/SCADA integration, and real-time telemetry pipelines across the plant floor.',
+    desc: 'Edge-to-cloud sensor networks, integración PLC/SCADA, telemetría en tiempo real a través de planta.',
     tags: ['MQTT', 'OPC-UA', 'EDGE', 'MODBUS'],
   },
   {
     id: 'S-02',
     icon: Eye,
-    title: 'Computer Vision',
-    desc: 'On-site inference for quality control, PPE compliance, defect detection, and process monitoring at the line.',
+    title: 'Visión Artificial',
+    desc: 'Interferencia On-site para control de calidad, cumplimiento de EPPs, detección de defectos y supervisión de procesos en linea de producción.',
     tags: ['YOLO', 'ONNX', 'JETSON', 'RTSP'],
   },
   {
     id: 'S-03',
     icon: LineChart,
-    title: 'Advanced Analytics',
-    desc: 'Predictive maintenance, anomaly detection, and OEE optimization powered by time-series ML models.',
+    title: 'Analítica Avanzada',
+    desc: 'Mantenimiento Predictivo, detección de anomalías, optimización de OEE potenciados por modelos ML basados en time-series.',
     tags: ['ML', 'FORECAST', 'OEE', 'ANOMALY'],
   },
   {
     id: 'S-04',
     icon: Cloud,
     title: 'Cloud Monitoring',
-    desc: 'Unified dashboards, alerting, and remote operations centers with secure multi-tenant access.',
-    tags: ['GRAFANA', 'ALERTS', 'API', 'RBAC'],
+    desc: 'Dashboards Unified, Alertas, centros de operación remotos con seguridad de acceso multi-tenant.',
+    tags: ['INSIGHTS HUB', 'GRAFANA', 'DATAMOSAIX', 'THINGWORX'],
   },
 ]
 
@@ -39,7 +39,7 @@ export function Solutions() {
         <SectionHeading
           index="01"
           title="Digital Solutions Stack"
-          subtitle="Modular capabilities deployed as a connected industrial ecosystem — from the sensor to the boardroom."
+          subtitle="Capacidades modulares desplegadas como un sistema industrial interconectado- desde los sensores hasta el Gerencia."
         />
 
         <div className="grid gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">

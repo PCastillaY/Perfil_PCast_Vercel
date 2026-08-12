@@ -39,7 +39,7 @@ export function Solutions() {
         <SectionHeading
           index="01"
           title="Digital Solutions Stack"
-          subtitle="Capacidades modulares desplegadas como un sistema industrial interconectado- desde los sensores hasta el Gerencia."
+          subtitle="Capacidades modulares desplegadas como un sistema industrial interconectado- desde los sensores hasta gerencia."
         />
 
         <div className="grid gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">

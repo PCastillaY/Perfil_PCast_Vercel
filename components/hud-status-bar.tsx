@@ -41,7 +41,7 @@ export function HudStatusBar() {
             aria-hidden="true"
           />
           <span className="font-semibold text-primary">
-            J. P. CASTILLA
+            P. CASTILLA
           </span>
           <span className="hidden text-muted-foreground sm:inline">
             // DINAUT_SYS_v4.0

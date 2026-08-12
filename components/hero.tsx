@@ -19,7 +19,7 @@ export function Hero() {
               style={{ animationDelay: '0.05s' }}
             >
               <MapPin className="size-3" aria-hidden="true" />
-              DINAUT // DIGITAL INDUSTRIAL ECOSYSTEMS
+              DINAUT // DIGITAL SOLUTIONS // INDUSTRIA 4.0 // INNOVACIÓN
             </div>
 
             <h1
@@ -58,7 +58,7 @@ export function Hero() {
                 className="clip-btn group inline-flex items-center gap-2 bg-primary px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/85 box-glow"
               >
                 <CalendarClock className="size-4" aria-hidden="true" />
-                Request 30-Min Briefing
+                Solicitar Reunión de 30 Minutos
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-1"
                   aria-hidden="true"
@@ -69,7 +69,7 @@ export function Hero() {
                 className="clip-btn inline-flex items-center gap-2 border border-primary/40 px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-primary transition-colors hover:bg-primary/10"
               >
                 <FileDown className="size-4" aria-hidden="true" />
-                View Solutions
+                Ver Soluciones
               </a>
             </div>
           </div>
@@ -80,7 +80,7 @@ export function Hero() {
             style={{ animationDelay: '0.36s' }}
           >
             <div className="flex items-center justify-between border-b border-border pb-3 font-mono text-[11px] tracking-widest text-muted-foreground">
-              <span>~/dinaut/profile.sh</span>
+              <span>~/profile.sh</span>
               <span className="flex items-center gap-1 text-primary">
                 <span className="size-1.5 rounded-full bg-primary led-blink" />
                 LIVE
@@ -94,18 +94,18 @@ export function Hero() {
                 {'>'} authenticating operator...
               </span>
               {'\n'}
-              <span className="text-accent">{'>'} ACCESS GRANTED</span>
+              <span className="text-accent">{'>'} ACCESO AUTORIZADO</span>
               {'\n\n'}
               <span className="text-muted-foreground">operator</span> ={' '}
-              <span className="text-primary">"J.P. CASTILLA"</span>
+              <span className="text-primary">"P. CASTILLA"</span>
               {'\n'}
               <span className="text-muted-foreground">role</span> ={' '}
-              <span className="text-primary">"INDUSTRY_4.0_LEAD"</span>
+              <span className="text-primary">"INDUSTRY_4.0_DEV"</span>
               {'\n'}
               <span className="text-muted-foreground">org</span> ={' '}
               <span className="text-primary">"DINAUT"</span>
               {'\n'}
-              <span className="text-muted-foreground">stack</span> = [IIoT, CV,
+              <span className="text-muted-foreground">stack</span> = [IIoT, AR, VISIÓN ARTIFICIAL,
               ANALYTICS, CLOUD]
               {'\n'}
               <span className="text-primary">$</span> _

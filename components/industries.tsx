@@ -5,22 +5,22 @@ const INDUSTRIES = [
   {
     id: 'IND-01',
     icon: Wheat,
-    name: 'Sugar Mills',
-    desc: 'Milling telemetry, boiler efficiency, and harvest-to-crystallization traceability.',
+    name: 'Agro Industrias',
+    desc: 'Monitoreo OnPrem & Cloud, Control potenciado con IA, Análisis predictivo y prescriptivo, etc.',
     metric: 'OEE +18%',
   },
   {
     id: 'IND-02',
     icon: Factory,
-    name: 'Manufacturing',
-    desc: 'Line-level vision QC, predictive maintenance, and production intelligence.',
+    name: 'Manufactura',
+    desc: 'Monitoreo de proceso, Modelos de mantenimiento predictivo, Análisis de anomalías, etc.',
     metric: 'DOWNTIME -32%',
   },
   {
     id: 'IND-03',
     icon: Mountain,
-    name: 'Mining',
-    desc: 'Fleet monitoring, safety compliance, and remote operations centers.',
+    name: 'Minería',
+    desc: 'Monitoreo de flota y activos, Analítica predictiva y prescriptiva, Análisis de anomalías, etc',
     metric: 'SAFETY +100%',
   },
 ]

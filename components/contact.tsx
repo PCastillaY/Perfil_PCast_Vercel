@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarClock, Globe, Link2, Mail } from 'lucide-react'
+import { ArrowUpRight, CalendarClock, Globe, Link2, Mail, MessageCircle } from 'lucide-react'
 import { SectionHeading } from '@/components/section-heading'
 
 const CHANNELS = [
@@ -7,6 +7,12 @@ const CHANNELS = [
     label: 'DIRECT_LINE',
     value: 'jcastilla@dinaut.com',
     href: 'mailto:jcastilla@dinaut.com',
+  },
+  {
+    icon: MessageCircle,
+    label: 'WHATSAPP',
+    value: '+51 980 583 725',
+    href: 'https://wa.me/51980583725',
   },
   {
     icon: Globe,

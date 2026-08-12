@@ -35,7 +35,7 @@ export function Contact() {
         <SectionHeading
           index="05"
           title="Establish Connection"
-          subtitle="Open a channel to scope your plant's digital transformation. Response window: < 24h."
+          subtitle="Aperture un canal para dimensionar la transformación digital de su planta. Respuesta promedio: < 24h."
         />
 
         <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">

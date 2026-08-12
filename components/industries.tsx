@@ -31,8 +31,8 @@ export function Industries() {
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <SectionHeading
           index="02"
-          title="Sectors Deployed"
-          subtitle="Battle-tested in demanding heavy-industry environments where uptime and safety are non-negotiable."
+          title="Sectores Desplegados"
+          subtitle="Soluciones comprobadas en entornos donde la seguridad y calidad no son negociables"
         />
 
         <div className="grid gap-6 md:grid-cols-3">

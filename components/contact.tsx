@@ -18,7 +18,7 @@ const CHANNELS = [
     icon: Link2,
     label: 'NETWORK',
     value: 'in/juan-pablo-castilla-yturbe-222143228',
-    href: 'https://www.linkedin.com',
+    href: 'https://www.linkedin.com/in/juan-pablo-castilla-yturbe-222143228',
   },
 ]
 

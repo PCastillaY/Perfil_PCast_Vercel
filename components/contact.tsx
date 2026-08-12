@@ -5,8 +5,8 @@ const CHANNELS = [
   {
     icon: Mail,
     label: 'DIRECT_LINE',
-    value: 'jp.castilla@dinaut.com',
-    href: 'mailto:jp.castilla@dinaut.com',
+    value: 'jcastilla@dinaut.com',
+    href: 'mailto:jcastilla@dinaut.com',
   },
   {
     icon: Globe,
@@ -17,7 +17,7 @@ const CHANNELS = [
   {
     icon: Link2,
     label: 'NETWORK',
-    value: 'in/juanpablocastilla',
+    value: 'in/juan-pablo-castilla-yturbe-222143228',
     href: 'https://www.linkedin.com',
   },
 ]

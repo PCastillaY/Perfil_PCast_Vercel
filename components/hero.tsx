@@ -1,8 +1,8 @@
 import { ArrowRight, CalendarClock, FileDown, MapPin } from 'lucide-react'
 
 const STATS = [
-  { label: 'YEARS_IN_FIELD', value: '12+' },
-  { label: 'PLANTS_DEPLOYED', value: '40+' },
+  { label: 'YEARS_IN_FIELD', value: '6+' },
+  { label: 'PROJECTS_DEPLOYED', value: '20+' },
   { label: 'IIOT_NODES', value: '1.2K+' },
   { label: 'DATA_UPTIME', value: '99.9%' },
 ]
@@ -35,17 +35,18 @@ export function Hero() {
               className="mt-5 font-mono text-sm uppercase tracking-widest text-accent text-glow-cyan reveal"
               style={{ animationDelay: '0.18s' }}
             >
-              Industry 4.0 &amp; Digital Solutions Specialist
+              Industry 4.0 &amp; Digital Solutions Development
             </p>
 
             <p
               className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground reveal text-pretty"
               style={{ animationDelay: '0.24s' }}
             >
-              Architecting and deploying state-of-the-art digital ecosystems for
-              heavy industries — sugar mills, manufacturing plants, and mining.
-              Specialized in IIoT, Computer Vision, Advanced Analytics, and
-              Cloud Monitoring.
+              Diseño e implementación de ecosistemas digitales de última generación para industrias 
+              pesadas: ingenios azucareros, plantas de manufactura y minería. Especializado en IIoT 
+              (Internet de las Cosas Industrial), visión por computador, analítica avanzada y 
+              monitorización en la nube.
+              
             </p>
 
             <div

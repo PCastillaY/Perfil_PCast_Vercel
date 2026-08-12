@@ -40,20 +40,20 @@ export function Contact() {
                 {'>'} SCHEDULE_UPLINK
               </p>
               <h3 className="mt-4 text-2xl font-bold uppercase tracking-tight text-foreground text-balance">
-                Request a 30-Minute Technical Briefing
+                Solicitar una reunión de 30 minutos.
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground text-pretty">
-                Bring your line data and operational bottlenecks. Leave with a
-                concrete IIoT + analytics deployment roadmap tailored to your
-                facility.
+                Traiga los datos de sus líneas y cuellos de botella operativos. 
+                Llévese una hoja de ruta concreta para el despliegue de IIoT y 
+                analítica, adaptada a su planta.
               </p>
             </div>
             <a
-              href="mailto:jp.castilla@dinaut.com?subject=30-Min%20Briefing%20Request"
+              href="mailto:jcastilla@dinaut.com?subject=30-Min%20Briefing%20Request"
               className="clip-btn mt-8 inline-flex w-fit items-center gap-2 bg-primary px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/85"
             >
               <CalendarClock className="size-4" aria-hidden="true" />
-              Initialize Meeting
+              Agendar Reunión
             </a>
           </div>
 

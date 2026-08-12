@@ -1,36 +1,30 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { Rajdhani, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
+const rajdhani = Rajdhani({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-rajdhani',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-jetbrains',
+})
+
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'J. P. Castilla // DINAUT_SYS_v4.0',
+  description:
+    'Juan Pablo Castilla Yturbe — Industry 4.0 & Digital Solutions Specialist at DINAUT. Architecting IIoT, Computer Vision, Advanced Analytics, and Cloud Monitoring ecosystems for heavy industry.',
   generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'dark',
+  themeColor: '#0d0d0d',
 }
 
 export default function RootLayout({
@@ -39,8 +33,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased">
+    <html
+      lang="en"
+      className={`${rajdhani.variable} ${jetbrainsMono.variable} bg-background`}
+    >
+      <body className="font-sans antialiased hud-scanlines">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

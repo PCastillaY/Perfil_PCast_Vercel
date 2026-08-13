@@ -61,7 +61,7 @@ export function Hero() {
                 className="clip-btn group inline-flex items-center gap-2 bg-primary px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/85 box-glow"
               >
                 <CalendarClock className="size-4" aria-hidden="true" />
-                Agendar Reunión de 30 Minutos
+                Agendar Reunión.
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-1"
                   aria-hidden="true"

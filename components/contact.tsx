@@ -48,7 +48,7 @@ export function Contact() {
                 {'>'} SCHEDULE_UPLINK
               </p>
               <h3 className="mt-4 text-2xl font-bold uppercase tracking-tight text-foreground text-balance">
-                Solicitar una reunión de 30 minutos.
+                Solicitar una reunión de 15 minutos.
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground text-pretty">
                 Traiga los datos de sus líneas y cuellos de botella operativos.

@@ -1,6 +1,8 @@
 import { ArrowUpRight, CalendarClock, Globe, Link2, Mail, MessageCircle } from 'lucide-react'
 import { SectionHeading } from '@/components/section-heading'
 
+const CALENDAR_URL = 'https://calendar.app.google/SKn31ZM3iLUhgxQ77'
+
 const CHANNELS = [
   {
     icon: Mail,
@@ -49,13 +51,15 @@ export function Contact() {
                 Solicitar una reunión de 30 minutos.
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground text-pretty">
-                Traiga los datos de sus líneas y cuellos de botella operativos. 
-                Llévese una hoja de ruta concreta para el despliegue de IIoT y 
+                Traiga los datos de sus líneas y cuellos de botella operativos.
+                Llévese una hoja de ruta concreta para el despliegue de IIoT y
                 analítica, adaptada a su planta.
               </p>
             </div>
             <a
-              href="mailto:jcastilla@dinaut.com?subject=30-Min%20Briefing%20Request"
+              href={CALENDAR_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="clip-btn mt-8 inline-flex w-fit items-center gap-2 bg-primary px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/85"
             >
               <CalendarClock className="size-4" aria-hidden="true" />

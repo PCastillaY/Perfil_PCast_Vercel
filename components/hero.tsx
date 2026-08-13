@@ -1,5 +1,7 @@
 import { ArrowRight, CalendarClock, FileDown, MapPin } from 'lucide-react'
 
+const CALENDAR_URL = 'https://calendar.app.google/SKn31ZM3iLUhgxQ77'
+
 const STATS = [
   { label: 'YEARS_IN_FIELD', value: '6+' },
   { label: 'PROJECTS_DEPLOYED', value: '20+' },
@@ -42,11 +44,10 @@ export function Hero() {
               className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground reveal text-pretty"
               style={{ animationDelay: '0.24s' }}
             >
-              Diseño e implementación de ecosistemas digitales de última generación para industrias 
-              pesadas: ingenios azucareros, plantas de manufactura y minería. Especializado en IIoT 
-              (Internet de las Cosas Industrial), visión por computador, analítica avanzada y 
+              Diseño e implementación de ecosistemas digitales de última generación para industrias
+              pesadas: ingenios azucareros, plantas de manufactura y minería. Especializado en IIoT
+              (Internet de las Cosas Industrial), visión por computador, analítica avanzada y
               monitorización en la nube.
-              
             </p>
 
             <div
@@ -54,11 +55,13 @@ export function Hero() {
               style={{ animationDelay: '0.3s' }}
             >
               <a
-                href="#contact"
+                href={CALENDAR_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="clip-btn group inline-flex items-center gap-2 bg-primary px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/85 box-glow"
               >
                 <CalendarClock className="size-4" aria-hidden="true" />
-                Solicitar Reunión de 30 Minutos
+                Agendar Reunión de 30 Minutos
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-1"
                   aria-hidden="true"

@@ -2,6 +2,7 @@ import { HudStatusBar } from '@/components/hud-status-bar'
 import { Hero } from '@/components/hero'
 import { Solutions } from '@/components/solutions'
 import { Industries } from '@/components/industries'
+import { ProjectDeployments } from '@/components/galery'
 import { Metrics } from '@/components/metrics'
 import { Contact } from '@/components/contact'
 import { SiteFooter } from '@/components/site-footer'
@@ -14,6 +15,7 @@ export default function Page() {
         <Hero />
         <Solutions />
         <Industries />
+        <ProjectDeployments />
         <Metrics />
         <Contact />
       </main>

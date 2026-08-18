@@ -5,6 +5,7 @@ import { Industries } from '@/components/industries'
 import { ProjectDeployments } from '@/components/galery'
 import { Metrics } from '@/components/metrics'
 import { Contact } from '@/components/contact'
+import { TerminalCLI } from '@/components/terminal-cli'
 import { SiteFooter } from '@/components/site-footer'
 
 export default function Page() {
@@ -18,6 +19,7 @@ export default function Page() {
         <ProjectDeployments />
         <Metrics />
         <Contact />
+        <TerminalCLI />
       </main>
       <SiteFooter />
     </div>

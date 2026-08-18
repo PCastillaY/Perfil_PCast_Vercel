@@ -95,11 +95,6 @@ const createSokoban = (): SokobanState => ({
   won: false,
 })
 
-// -----------------------------------------------------------------------------
-// Aventura industrial: una mini aventura narrativa tipo Zork, completamente
-// determinista y sin acceso a APIs, filesystem, DOM externo o shell.
-// -----------------------------------------------------------------------------
-
 type AdventureRoomId =
   | 'control'
   | 'plc'
@@ -510,7 +505,9 @@ export function TerminalCLI() {
   const [output, setOutput] = useState<string[]>(['JPCY_TERMINAL v1.1.0', 'INDUSTRY 4.0 DIGITAL SOLUTIONS // ONLINE', "Escribe 'help' para ver los comandos disponibles."])
   const [game, setGame] = useState<'sokoban' | 'adventure' | null>(null)
   const [parrot, setParrot] = useState(false)
-  const [closed, setClosed] = useState(false)
+  // La terminal inicia minimizada para evitar que el autofocus del CLI desplace
+  // el viewport directamente hasta el final de la página al cargar.
+  const [closed, setClosed] = useState(true)
   const inputRef = useRef<HTMLInputElement>(null)
   const prompt = useMemo(() => 'guest@jpc-y:~$', [])
 
@@ -560,9 +557,7 @@ export function TerminalCLI() {
           {game === 'adventure' && <AdventureGame onExit={() => setGame(null)} />}
         </div>
         <form onSubmit={submit} className="flex items-center gap-2 border-t border-primary/25 bg-black/50 px-3 py-3">
-          <span className="shrink-0 text-primary/70">{prompt}</span><ChevronRight className="h-4 w-4 shrink-0 text-primary" />
-          <input ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} className="min-w-0 flex-1 bg-transparent text-primary caret-primary outline-none placeholder:text-primary/30" placeholder="escribe help..." aria-label="Entrada de terminal" autoComplete="off" autoCapitalize="none" spellCheck={false} />
-          <span className="caret-blink select-none text-primary text-glow" aria-hidden="true">█</span><button type="submit" className="sr-only">Ejecutar</button>
+          <span className="shrink-0 text-primary/70">{prompt}</span><ChevronRight className="h-4 w-4 shrink-0 text-primary" /><input ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} className="min-w-0 flex-1 bg-transparent text-primary caret-primary outline-none placeholder:text-primary/30" placeholder="escribe help..." aria-label="Entrada de terminal" autoComplete="off" autoCapitalize="none" spellCheck={false} /><span className="caret-blink select-none text-primary text-glow" aria-hidden="true">█</span><button type="submit" className="sr-only">Ejecutar</button>
         </form>
       </div>
       <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-primary/35"><span>Whitelist execution · no shell access · sandboxed UI</span><span className="hidden sm:block">ArrowUp / ArrowDown · history</span></div>

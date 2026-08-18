@@ -1,10 +1,9 @@
 'use client'
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Terminal as TerminalIcon, X, Trash2, ChevronRight, Gamepad2, RotateCcw } from 'lucide-react'
+import { Terminal as TerminalIcon, X, Trash2, ChevronRight, RotateCcw } from 'lucide-react'
 
 const CALENDAR_URL = 'https://calendar.app.google/SKn31ZM3iLUhgxQ77'
-
 const UNKNOWN_COMMAND = "Error: Comando no reconocido. Escribe 'help' para ver los comandos disponibles."
 
 const HELP_LINES = [
@@ -48,11 +47,11 @@ const SKILLS_LINES = [
 
 const PROJECT_LINES = [
   'PROJECT DEPLOYMENTS',
-  'DINSync ID          IIoT / Node-RED / Industrial Data',
-  'Industrial Monitoring  Grafana / Cloud / KPI / SCADA',
-  'Industrial AR          Unity / Vuforia / Digital Workflows',
-  'Computer Vision        Python / YOLO / OCR / Roboflow',
-  'Industrial Analytics   ThingWorx / Insights Hub / Analytics',
+  'DINSync ID            IIoT / Node-RED / Industrial Data',
+  'Industrial Monitoring Grafana / Cloud / KPI / SCADA',
+  'Industrial AR         Unity / Vuforia / Digital Workflows',
+  'Computer Vision       Python / YOLO / OCR / Roboflow',
+  'Industrial Analytics  ThingWorx / Insights Hub / Analytics',
 ]
 
 const EXPERIENCE_LINES = [
@@ -79,6 +78,7 @@ type Point = { r: number; c: number }
 type SokobanState = {
   board: SokobanCell[][]
   player: Point
+  underPlayer: '.' | ' '
   moves: number
   won: boolean
 }
@@ -86,7 +86,7 @@ type SokobanState = {
 const SOKOBAN_LEVEL: SokobanCell[][] = [
   ['#', '#', '#', '#', '#', '#', '#'],
   ['#', ' ', ' ', ' ', '.', ' ', '#'],
-  ['#', ' ', '$', ' ', '.', ' ', '#'],
+  ['#', ' ', '$', ' ', ' ', ' ', '#'],
   ['#', ' ', ' ', '@', ' ', ' ', '#'],
   ['#', ' ', '$', ' ', '.', ' ', '#'],
   ['#', ' ', ' ', ' ', ' ', ' ', '#'],
@@ -96,12 +96,7 @@ const SOKOBAN_LEVEL: SokobanCell[][] = [
 const cloneBoard = (board: SokobanCell[][]) => board.map((row) => [...row])
 
 function createSokoban(): SokobanState {
-  return {
-    board: cloneBoard(SOKOBAN_LEVEL),
-    player: { r: 3, c: 3 },
-    moves: 0,
-    won: false,
-  }
+  return { board: cloneBoard(SOKOBAN_LEVEL), player: { r: 3, c: 3 }, underPlayer: ' ', moves: 0, won: false }
 }
 
 const ADVENTURE_ROOMS = {
@@ -123,112 +118,52 @@ const ADVENTURE_ROOMS = {
 } as const
 
 type AdventureRoom = keyof typeof ADVENTURE_ROOMS
-
-type AdventureState = {
-  room: AdventureRoom
-  inventory: string[]
-  log: string[]
-  finished: boolean
-}
+type AdventureState = { room: AdventureRoom; inventory: string[]; log: string[]; finished: boolean }
 
 function createAdventure(): AdventureState {
-  return {
-    room: 'terminal',
-    inventory: [],
-    log: [
-      'ADVENTURE // INDUSTRIAL NODE',
-      'Escribe LOOK, NORTE, SUR, ESTE, OESTE, TAKE CARD, USE CARD o HELP.',
-      '',
-      ADVENTURE_ROOMS.terminal.description,
-    ],
-    finished: false,
-  }
+  return { room: 'terminal', inventory: [], log: ['ADVENTURE // INDUSTRIAL NODE', 'Escribe LOOK, NORTE, SUR, ESTE, OESTE, TAKE CARD, USE CARD o HELP.', '', ADVENTURE_ROOMS.terminal.description], finished: false }
 }
 
 function AdventureGame({ onExit }: { onExit: () => void }) {
   const [game, setGame] = useState<AdventureState>(createAdventure)
   const [command, setCommand] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-
   useEffect(() => inputRef.current?.focus(), [])
 
   const execute = () => {
     const raw = command.trim().toLowerCase()
     if (!raw) return
-
     setGame((current) => {
       const room = ADVENTURE_ROOMS[current.room]
       let message = `> ${command}`
-      let next = { ...current, log: [...current.log] }
-
-      if (raw === 'help' || raw === 'ayuda') {
-        message += '\nComandos: LOOK, NORTE/SUR/ESTE/OESTE, TAKE CARD, USE CARD, INVENTORY, RESET, EXIT.'
-      } else if (raw === 'look' || raw === 'mirar') {
-        message += `\n${room.title}: ${room.description}`
-      } else if (raw === 'inventory' || raw === 'inventario') {
-        message += `\nInventario: ${current.inventory.length ? current.inventory.join(', ') : 'vacío'}.`
-      } else if (raw === 'reset') {
-        return createAdventure()
-      } else if (raw === 'take card' || raw === 'tomar tarjeta') {
-        if (current.room === 'core' && !current.inventory.includes('CARD')) {
-          next.inventory = ['CARD']
-          message += '\nHas tomado la CARD de acceso.'
-        } else {
-          message += '\nNo hay una CARD disponible aquí.'
-        }
+      const next: AdventureState = { ...current, inventory: [...current.inventory], log: [...current.log] }
+      if (raw === 'help' || raw === 'ayuda') message += '\nComandos: LOOK, NORTE/SUR/ESTE/OESTE, TAKE CARD, USE CARD, INVENTORY, RESET, EXIT.'
+      else if (raw === 'look' || raw === 'mirar') message += `\n${room.title}: ${room.description}`
+      else if (raw === 'inventory' || raw === 'inventario') message += `\nInventario: ${current.inventory.length ? current.inventory.join(', ') : 'vacío'}.`
+      else if (raw === 'reset') return createAdventure()
+      else if (raw === 'take card' || raw === 'tomar tarjeta') {
+        if (current.room === 'core' && !current.inventory.includes('CARD')) { next.inventory.push('CARD'); message += '\nHas tomado la CARD de acceso.' }
+        else message += '\nNo hay una CARD disponible aquí.'
       } else if (raw === 'use card' || raw === 'usar tarjeta') {
-        if (current.room === 'core' && current.inventory.includes('CARD')) {
-          message += '\nACCESS GRANTED. El núcleo ha sido desbloqueado. Misión completada.'
-          next.finished = true
-        } else {
-          message += '\nNo puedes usar la CARD aquí.'
-        }
-      } else if (raw === 'exit' || raw === 'salir') {
-        onExit()
-        return current
-      } else {
+        if (current.room === 'core' && current.inventory.includes('CARD')) { message += '\nACCESS GRANTED. El núcleo ha sido desbloqueado. Misión completada.'; next.finished = true }
+        else message += '\nNo puedes usar la CARD aquí.'
+      } else if (raw === 'exit' || raw === 'salir') { onExit(); return current }
+      else {
         const destination = room.exits[raw as keyof typeof room.exits]
-        if (destination) {
-          next.room = destination as AdventureRoom
-          message += `\nEntrando en ${ADVENTURE_ROOMS[destination as AdventureRoom].title}.`
-          message += `\n${ADVENTURE_ROOMS[destination as AdventureRoom].description}`
-        } else {
-          message += '\nComando no reconocido. Usa HELP.'
-        }
+        if (destination) { next.room = destination as AdventureRoom; message += `\nEntrando en ${ADVENTURE_ROOMS[destination as AdventureRoom].title}.\n${ADVENTURE_ROOMS[destination as AdventureRoom].description}` }
+        else message += '\nComando no reconocido. Usa HELP.'
       }
-
-      next.log = [...next.log, message]
+      next.log.push(message)
       return next
     })
-
     setCommand('')
   }
 
   return (
     <div className="mt-3 border border-cyan/30 bg-black/70 p-3 text-sm text-cyan font-mono shadow-[0_0_24px_rgba(0,240,255,0.08)]">
-      <div className="mb-3 flex items-center justify-between border-b border-cyan/20 pb-2">
-        <span className="tracking-[0.18em] text-cyan">ADVENTURE // TEXT NODE</span>
-        <button onClick={onExit} className="border border-cyan/30 px-2 py-1 text-xs hover:bg-cyan/10" aria-label="Salir de Adventure">
-          <X className="mr-1 inline h-3 w-3" /> SALIR
-        </button>
-      </div>
-      <div className="mb-3 h-56 overflow-y-auto whitespace-pre-wrap leading-6">
-        {game.log.map((line, index) => <div key={`${index}-${line.slice(0, 12)}`}>{line}</div>)}
-        {game.finished && <div className="mt-2 text-primary text-glow">[MISSION COMPLETE]</div>}
-      </div>
-      <div className="flex items-center gap-2 border-t border-cyan/20 pt-2">
-        <span className="text-cyan">adventure@{game.room} $</span>
-        <input
-          ref={inputRef}
-          value={command}
-          onChange={(event) => setCommand(event.target.value)}
-          onKeyDown={(event) => event.key === 'Enter' && execute()}
-          className="min-w-0 flex-1 bg-transparent text-cyan outline-none"
-          aria-label="Comando Adventure"
-          autoComplete="off"
-          spellCheck={false}
-        />
-      </div>
+      <div className="mb-3 flex items-center justify-between border-b border-cyan/20 pb-2"><span className="tracking-[0.18em] text-cyan">ADVENTURE // TEXT NODE</span><button onClick={onExit} className="border border-cyan/30 px-2 py-1 text-xs hover:bg-cyan/10" aria-label="Salir de Adventure"><X className="mr-1 inline h-3 w-3" /> SALIR</button></div>
+      <div className="mb-3 h-56 overflow-y-auto whitespace-pre-wrap leading-6">{game.log.map((line, index) => <div key={`${index}-${line.slice(0, 12)}`}>{line}</div>)}{game.finished && <div className="mt-2 text-primary text-glow">[MISSION COMPLETE]</div>}</div>
+      <div className="flex items-center gap-2 border-t border-cyan/20 pt-2"><span className="text-cyan">adventure@{game.room} $</span><input ref={inputRef} value={command} onChange={(event) => setCommand(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && execute()} className="min-w-0 flex-1 bg-transparent text-cyan outline-none" aria-label="Comando Adventure" autoComplete="off" spellCheck={false} /></div>
     </div>
   )
 }
@@ -236,7 +171,6 @@ function AdventureGame({ onExit }: { onExit: () => void }) {
 function SokobanGame({ onExit }: { onExit: () => void }) {
   const [game, setGame] = useState<SokobanState>(createSokoban)
   const containerRef = useRef<HTMLDivElement>(null)
-
   const reset = () => setGame(createSokoban())
 
   const move = useCallback((dr: number, dc: number) => {
@@ -244,308 +178,111 @@ function SokobanGame({ onExit }: { onExit: () => void }) {
       if (current.won) return current
       const next = { ...current, board: cloneBoard(current.board), player: { ...current.player } }
       const target = { r: next.player.r + dr, c: next.player.c + dc }
-      if (next.board[target.r]?.[target.c] === '#') return current
-
       const targetCell = next.board[target.r]?.[target.c]
-      if (!targetCell) return current
-
+      if (!targetCell || targetCell === '#') return current
       if (targetCell === '$' || targetCell === '*') {
         const beyond = { r: target.r + dr, c: target.c + dc }
         const beyondCell = next.board[beyond.r]?.[beyond.c]
         if (!beyondCell || beyondCell === '#' || beyondCell === '$' || beyondCell === '*') return current
-
         next.board[beyond.r][beyond.c] = beyondCell === '.' ? '*' : '$'
         next.board[target.r][target.c] = targetCell === '*' ? '.' : ' '
       }
-
-      const playerCell = next.board[next.player.r][next.player.c]
-      next.board[next.player.r][next.player.c] = playerCell === '@' ? ' ' : playerCell
+      next.board[next.player.r][next.player.c] = next.underPlayer
+      next.underPlayer = targetCell === '.' ? '.' : ' '
       next.player = target
       next.board[target.r][target.c] = '@'
       next.moves += 1
-      next.won = next.board.flat().filter((cell) => cell === '.').length === 0
+      next.won = next.board.flat().filter((cell) => cell === '*').length === 2
       return next
     })
   }, [])
 
-  useEffect(() => {
-    containerRef.current?.focus()
-  }, [])
-
+  useEffect(() => { containerRef.current?.focus() }, [])
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      const keys: Record<string, Point> = {
-        ArrowUp: { r: -1, c: 0 },
-        ArrowDown: { r: 1, c: 0 },
-        ArrowLeft: { r: 0, c: -1 },
-        ArrowRight: { r: 0, c: 1 },
-        w: { r: -1, c: 0 },
-        s: { r: 1, c: 0 },
-        a: { r: 0, c: -1 },
-        d: { r: 0, c: 1 },
-      }
+      const keys: Record<string, Point> = { ArrowUp: { r: -1, c: 0 }, ArrowDown: { r: 1, c: 0 }, ArrowLeft: { r: 0, c: -1 }, ArrowRight: { r: 0, c: 1 }, w: { r: -1, c: 0 }, s: { r: 1, c: 0 }, a: { r: 0, c: -1 }, d: { r: 0, c: 1 } }
       const direction = keys[event.key]
-      if (direction) {
-        event.preventDefault()
-        move(direction.r, direction.c)
-      }
+      if (direction) { event.preventDefault(); move(direction.r, direction.c) }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [move])
 
-  const cell = (value: SokobanCell) => {
-    if (value === '#') return '■'
-    if (value === '@') return '●'
-    if (value === '$') return '◆'
-    if (value === '*') return '★'
-    if (value === '.') return '◎'
-    return '·'
-  }
-
+  const glyph = (value: SokobanCell) => value === '#' ? '■' : value === '@' ? '●' : value === '$' ? '◆' : value === '*' ? '★' : value === '.' ? '◎' : '·'
   return (
-    <div
-      ref={containerRef}
-      tabIndex={0}
-      className="mt-3 border border-primary/30 bg-black/80 p-3 font-mono text-primary shadow-[0_0_24px_rgba(77,240,34,0.08)] outline-none"
-      aria-label="Juego Sokoban"
-    >
-      <div className="mb-3 flex items-center justify-between border-b border-primary/20 pb-2 text-sm">
-        <span className="tracking-[0.18em]">SOKOBAN // LOGISTICS NODE</span>
-        <div className="flex gap-2">
-          <button onClick={reset} className="border border-primary/30 px-2 py-1 text-xs hover:bg-primary/10"><RotateCcw className="mr-1 inline h-3 w-3" /> RESET</button>
-          <button onClick={onExit} className="border border-primary/30 px-2 py-1 text-xs hover:bg-primary/10"><X className="mr-1 inline h-3 w-3" /> SALIR</button>
-        </div>
-      </div>
-      <div className="mb-3 text-xs text-primary/70">Flechas o W/A/S/D · MOVER: {game.moves} · ★ = CAJA EN OBJETIVO</div>
-      <div className="mx-auto w-fit select-none text-center text-xl leading-6 tracking-[0.2em]">
-        {game.board.map((row, r) => (
-          <div key={r} className="h-6">
-            {row.map((value, c) => <span key={`${r}-${c}`} className={value === '#' ? 'text-primary/50' : value === '@' ? 'text-cyan text-glow-cyan' : value === '$' || value === '*' ? 'text-amber-400' : value === '.' ? 'text-primary text-glow' : 'text-primary/25'}>{cell(value)}</span>)}
-          </div>
-        ))}
-      </div>
+    <div ref={containerRef} tabIndex={0} className="mt-3 border border-primary/30 bg-black/80 p-3 font-mono text-primary shadow-[0_0_24px_rgba(77,240,34,0.08)] outline-none" aria-label="Juego Sokoban">
+      <div className="mb-3 flex items-center justify-between border-b border-primary/20 pb-2 text-sm"><span className="tracking-[0.18em]">SOKOBAN // LOGISTICS NODE</span><div className="flex gap-2"><button onClick={reset} className="border border-primary/30 px-2 py-1 text-xs hover:bg-primary/10"><RotateCcw className="mr-1 inline h-3 w-3" /> RESET</button><button onClick={onExit} className="border border-primary/30 px-2 py-1 text-xs hover:bg-primary/10"><X className="mr-1 inline h-3 w-3" /> SALIR</button></div></div>
+      <div className="mb-3 text-xs text-primary/70">Flechas o W/A/S/D · MOVES: {game.moves} · ★ = CAJA EN OBJETIVO</div>
+      <div className="mx-auto w-fit select-none text-center text-xl leading-6 tracking-[0.2em]">{game.board.map((row, r) => <div key={r} className="h-6">{row.map((value, c) => <span key={`${r}-${c}`} className={value === '#' ? 'text-primary/50' : value === '@' ? 'text-cyan text-glow-cyan' : value === '$' || value === '*' ? 'text-amber-400' : value === '.' ? 'text-primary text-glow' : 'text-primary/25'}>{glyph(value)}</span>)}</div>)}</div>
       {game.won && <div className="mt-3 text-center text-primary text-glow">[LOGISTICS COMPLETE] — Nivel resuelto.</div>}
     </div>
   )
 }
 
 function Parrot() {
-  const frames = [
-    ['   __', '  (o )', '  /|\\', '   / \\'],
-    ['   __', '  ( o)', '  /|\\', '  /  \\'],
-    ['   __', '  (o )', ' _/|\\_', '   / \\'],
-    ['   __', '  ( o)', '  /|\\', ' _/  \\'],
-  ]
+  const frames = [['   __', '  (o )', '  /|\\', '   / \\'], ['   __', '  ( o)', '  /|\\', '  /  \\'], ['   __', '  (o )', ' _/|\\_', '   / \\'], ['   __', '  ( o)', '  /|\\', ' _/  \\']]
   const [frame, setFrame] = useState(0)
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setFrame((value) => (value + 1) % frames.length), 180)
-    return () => window.clearInterval(timer)
-  }, [frames.length])
-
-  return (
-    <div className="my-2 overflow-hidden border border-amber-400/30 bg-black/60 p-2 text-amber-400" aria-label="Parrot live ASCII">
-      <div className="mb-1 text-xs text-amber-400/70">curl parrot.live // STREAMING ASCII</div>
-      <pre className="text-xs leading-4 text-amber-400 text-glow">{frames[frame].join('\n')}</pre>
-    </div>
-  )
+  useEffect(() => { const timer = window.setInterval(() => setFrame((value) => (value + 1) % frames.length), 180); return () => window.clearInterval(timer) }, [frames.length])
+  return <div className="my-2 overflow-hidden border border-amber-400/30 bg-black/60 p-2 text-amber-400" aria-label="Parrot live ASCII"><div className="mb-1 text-xs text-amber-400/70">curl parrot.live // STREAMING ASCII</div><pre className="text-xs leading-4 text-amber-400 text-glow">{frames[frame].join('\n')}</pre></div>
 }
 
 export function TerminalCLI() {
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
-  const [output, setOutput] = useState<string[]>([
-    'JPCY_TERMINAL v1.0.0',
-    'INDUSTRY 4.0 DIGITAL SOLUTIONS // ONLINE',
-    "Escribe 'help' para ver los comandos disponibles.",
-  ])
+  const [output, setOutput] = useState<string[]>(['JPCY_TERMINAL v1.0.0', 'INDUSTRY 4.0 DIGITAL SOLUTIONS // ONLINE', "Escribe 'help' para ver los comandos disponibles."])
   const [game, setGame] = useState<'sokoban' | 'adventure' | null>(null)
   const [parrot, setParrot] = useState(false)
   const [closed, setClosed] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-
   const prompt = useMemo(() => 'guest@jpc-y:~$', [])
 
-  useEffect(() => {
-    if (!closed) inputRef.current?.focus()
-  }, [closed, game])
-
-  const clear = useCallback(() => {
-    setOutput([])
-    setParrot(false)
-  }, [])
-
-  const close = useCallback(() => {
-    setOutput([])
-    setGame(null)
-    setParrot(false)
-    setInput('')
-    setClosed(true)
-  }, [])
+  useEffect(() => { if (!closed) inputRef.current?.focus() }, [closed, game])
+  const clear = useCallback(() => { setOutput([]); setParrot(false) }, [])
+  const close = useCallback(() => { setOutput([]); setGame(null); setParrot(false); setInput(''); setClosed(true) }, [])
 
   const runCommand = useCallback((rawCommand: string) => {
     const command = rawCommand.trim()
     const normalized = command.toLowerCase()
     if (!command) return
-
     setHistory((current) => [...current.filter((item) => item !== command), command])
     setHistoryIndex(-1)
     setParrot(false)
-
-    if (normalized === 'clear' || normalized === 'cls') {
-      clear()
-      return
-    }
-
-    if (normalized === 'exit' || normalized === 'salir') {
-      close()
-      return
-    }
-
-    if (normalized === 'play sokoban') {
-      setOutput((current) => [...current, `${prompt} ${command}`])
-      setGame('sokoban')
-      return
-    }
-
-    if (normalized === 'play adventure') {
-      setOutput((current) => [...current, `${prompt} ${command}`])
-      setGame('adventure')
-      return
-    }
-
-    if (normalized === 'play') {
-      setOutput((current) => [...current, `${prompt} ${command}`, 'Uso: play [juego]. Disponibles: sokoban, adventure'])
-      return
-    }
-
-    if (normalized === 'curl parrot.live') {
-      setOutput((current) => [...current, `${prompt} ${command}`])
-      setParrot(true)
-      return
-    }
-
-    const responses: Record<string, string[]> = {
-      help: HELP_LINES,
-      ayuda: HELP_LINES,
-      about: ABOUT_LINES,
-      jpcy: ABOUT_LINES,
-      skills: SKILLS_LINES,
-      projects: PROJECT_LINES,
-      experience: EXPERIENCE_LINES,
-      contact: CONTACT_LINES,
-      calendar: [`CALENDAR UPLINK: ${CALENDAR_URL}`, 'Abriendo agenda de reuniones...'],
-      sudo: ['Buen intento, usuario, permiso denegado'],
-    }
-
+    if (normalized === 'clear' || normalized === 'cls') { clear(); return }
+    if (normalized === 'exit' || normalized === 'salir') { close(); return }
+    if (normalized === 'play sokoban') { setOutput((current) => [...current, `${prompt} ${command}`]); setGame('sokoban'); return }
+    if (normalized === 'play adventure') { setOutput((current) => [...current, `${prompt} ${command}`]); setGame('adventure'); return }
+    if (normalized === 'play') { setOutput((current) => [...current, `${prompt} ${command}`, 'Uso: play [juego]. Disponibles: sokoban, adventure']); return }
+    if (normalized === 'curl parrot.live') { setOutput((current) => [...current, `${prompt} ${command}`]); setParrot(true); return }
+    const responses: Record<string, string[]> = { help: HELP_LINES, ayuda: HELP_LINES, about: ABOUT_LINES, jpcy: ABOUT_LINES, skills: SKILLS_LINES, projects: PROJECT_LINES, experience: EXPERIENCE_LINES, contact: CONTACT_LINES, calendar: [`CALENDAR UPLINK: ${CALENDAR_URL}`, 'Agenda disponible para reuniones de 30 minutos.'], sudo: ['Buen intento, usuario, permiso denegado'] }
     const response = responses[normalized]
-    if (response) {
-      setOutput((current) => [...current, `${prompt} ${command}`, ...response])
-      return
-    }
-
+    if (response) { setOutput((current) => [...current, `${prompt} ${command}`, ...response]); return }
     setOutput((current) => [...current, `${prompt} ${command}`, UNKNOWN_COMMAND])
   }, [clear, close, prompt])
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const command = input.trim()
-    if (!command) return
-    runCommand(command)
-    setInput('')
-  }
-
+  const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const command = input.trim(); if (!command) return; runCommand(command); setInput('') }
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'ArrowUp') {
-      event.preventDefault()
-      setHistoryIndex((index) => {
-        const next = Math.min(index + 1, history.length - 1)
-        setInput(history[history.length - 1 - next] ?? '')
-        return next
-      })
-    }
-    if (event.key === 'ArrowDown') {
-      event.preventDefault()
-      setHistoryIndex((index) => {
-        const next = Math.max(index - 1, -1)
-        setInput(next === -1 ? '' : history[history.length - 1 - next] ?? '')
-        return next
-      })
-    }
+    if (event.key === 'ArrowUp') { event.preventDefault(); setHistoryIndex((index) => { const next = Math.min(index + 1, history.length - 1); setInput(history[history.length - 1 - next] ?? ''); return next }) }
+    if (event.key === 'ArrowDown') { event.preventDefault(); setHistoryIndex((index) => { const next = Math.max(index - 1, -1); setInput(next === -1 ? '' : history[history.length - 1 - next] ?? ''); return next }) }
   }
 
-  if (closed) {
-    return (
-      <section className="border-t border-primary/20 bg-[#050807] px-4 py-3 font-mono">
-        <button
-          onClick={() => setClosed(false)}
-          className="group flex w-full items-center justify-between border border-primary/25 bg-black/60 px-4 py-3 text-left text-primary transition hover:border-primary/60 hover:bg-primary/5"
-        >
-          <span><TerminalIcon className="mr-2 inline h-4 w-4" /> TERMINAL OFFLINE</span>
-          <span className="text-xs text-primary/60 group-hover:text-primary">[ OPEN CLI ]</span>
-        </button>
-      </section>
-    )
-  }
+  if (closed) return <section className="border-t border-primary/20 bg-[#050807] px-4 py-3 font-mono"><button onClick={() => setClosed(false)} className="group flex w-full items-center justify-between border border-primary/25 bg-black/60 px-4 py-3 text-left text-primary transition hover:border-primary/60 hover:bg-primary/5"><span><TerminalIcon className="mr-2 inline h-4 w-4" /> TERMINAL OFFLINE</span><span className="text-xs text-primary/60 group-hover:text-primary">[ OPEN CLI ]</span></button></section>
 
   return (
     <section id="terminal-cli" className="relative border-t border-primary/30 bg-[#050807] font-mono text-sm text-primary shadow-[0_-10px_40px_rgba(77,240,34,0.04)]">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
       <div className="mx-auto max-w-6xl px-4 py-5 md:px-6">
         <div className="overflow-hidden border border-primary/25 bg-[#080b0a] shadow-[0_0_30px_rgba(77,240,34,0.06)]">
-          <header className="flex items-center justify-between border-b border-primary/20 bg-primary/[0.03] px-3 py-2">
-            <div className="flex items-center gap-2 text-xs tracking-[0.18em]">
-              <span className="inline-block h-2 w-2 rounded-full bg-primary led-blink" />
-              JPCY // TERMINAL CLI
-            </div>
-            <div className="flex items-center gap-1">
-              <button onClick={clear} className="border border-primary/20 px-2 py-1 text-[10px] tracking-widest text-primary/70 hover:border-primary/50 hover:text-primary" title="Limpiar terminal">
-                <Trash2 className="mr-1 inline h-3 w-3" /> CLS
-              </button>
-              <button onClick={close} className="border border-primary/20 px-2 py-1 text-[10px] tracking-widest text-primary/70 hover:border-red-400/50 hover:text-red-400" title="Cerrar terminal">
-                <X className="mr-1 inline h-3 w-3" /> EXIT
-              </button>
-            </div>
-          </header>
-
+          <header className="flex items-center justify-between border-b border-primary/20 bg-primary/[0.03] px-3 py-2"><div className="flex items-center gap-2 text-xs tracking-[0.18em]"><span className="inline-block h-2 w-2 rounded-full bg-primary led-blink" /> JPCY // TERMINAL CLI</div><div className="flex items-center gap-1"><button onClick={clear} className="border border-primary/20 px-2 py-1 text-[10px] tracking-widest text-primary/70 hover:border-primary/50 hover:text-primary" title="Limpiar terminal"><Trash2 className="mr-1 inline h-3 w-3" /> CLS</button><button onClick={close} className="border border-primary/20 px-2 py-1 text-[10px] tracking-widest text-primary/70 hover:border-red-400/50 hover:text-red-400" title="Cerrar terminal"><X className="mr-1 inline h-3 w-3" /> EXIT</button></div></header>
           <div className="max-h-[28rem] min-h-64 overflow-y-auto px-3 py-4 text-xs leading-5 sm:text-sm">
-            {output.map((line, index) => (
-              <div key={`${index}-${line}`} className={line.startsWith('Error:') ? 'text-red-400' : line.startsWith('JPCY') || line.startsWith('CORE') || line.startsWith('PROJECT') || line.startsWith('EXPERIENCE') || line.startsWith('CONTACT') ? 'text-cyan text-glow-cyan' : 'text-primary/85'}>
-                {line.startsWith('CALENDAR UPLINK: ') ? (
-                  <span>{line.slice(0, 17)}<a href={CALENDAR_URL} target="_blank" rel="noopener noreferrer" className="underline decoration-primary/40 underline-offset-4 hover:text-cyan">{line.slice(17)}</a></span>
-                ) : line}
-              </div>
-            ))}
+            {output.map((line, index) => <div key={`${index}-${line}`} className={line.startsWith('Error:') ? 'text-red-400' : line.startsWith('JPCY') || line.startsWith('CORE') || line.startsWith('PROJECT') || line.startsWith('EXPERIENCE') || line.startsWith('CONTACT') ? 'text-cyan text-glow-cyan' : 'text-primary/85'}>{line.startsWith('CALENDAR UPLINK: ') ? <span>{line.slice(0, 17)}<a href={CALENDAR_URL} target="_blank" rel="noopener noreferrer" className="underline decoration-primary/40 underline-offset-4 hover:text-cyan">{line.slice(17)}</a></span> : line}</div>)}
             {parrot && <Parrot />}
             {game === 'sokoban' && <SokobanGame onExit={() => setGame(null)} />}
             {game === 'adventure' && <AdventureGame onExit={() => setGame(null)} />}
           </div>
-
-          <form onSubmit={submit} className="flex items-center gap-2 border-t border-primary/25 bg-black/50 px-3 py-3">
-            <span className="shrink-0 text-primary/70">{prompt}</span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={handleKeyDown}
-              className="min-w-0 flex-1 bg-transparent text-primary caret-primary outline-none placeholder:text-primary/30"
-              placeholder="escribe help..."
-              aria-label="Entrada de terminal"
-              autoComplete="off"
-              autoCapitalize="none"
-              spellCheck={false}
-            />
-            <span className="caret-blink select-none text-primary text-glow" aria-hidden="true">█</span>
-            <button type="submit" className="sr-only">Ejecutar</button>
-          </form>
+          <form onSubmit={submit} className="flex items-center gap-2 border-t border-primary/25 bg-black/50 px-3 py-3"><span className="shrink-0 text-primary/70">{prompt}</span><ChevronRight className="h-4 w-4 shrink-0 text-primary" /><input ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} className="min-w-0 flex-1 bg-transparent text-primary caret-primary outline-none placeholder:text-primary/30" placeholder="escribe help..." aria-label="Entrada de terminal" autoComplete="off" autoCapitalize="none" spellCheck={false} /><span className="caret-blink select-none text-primary text-glow" aria-hidden="true">█</span><button type="submit" className="sr-only">Ejecutar</button></form>
         </div>
-        <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-primary/35">
-          <span>Whitelist execution · no shell access · sandboxed UI</span>
-          <span className="hidden sm:block">ArrowUp / ArrowDown · history</span>
-        </div>
+        <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-primary/35"><span>Whitelist execution · no shell access · sandboxed UI</span><span className="hidden sm:block">ArrowUp / ArrowDown · history</span></div>
       </div>
     </section>
   )

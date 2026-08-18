@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Terminal as TerminalIcon, X, Trash2, ChevronRight, RotateCcw } from 'lucide-react'
 
-const CALENDAR_URL = 'https://calendar.app.google/SKn31ZM3iLUhgxQ77'
+const CALENDAR_URL = 'https://calendar.app.google/SKn31ZM3iLUhgQ77'
 const UNKNOWN_COMMAND = "Error: Comando no reconocido. Escribe 'help' para ver los comandos disponibles."
 
 const HELP_LINES = ['help / ayuda       Lista de comandos disponibles.', 'about / JPCY       Perfil profesional de J. P. Castilla.', 'skills             Stack tecnológico y competencias core.', 'projects           Proyectos principales y tecnologías.', 'experience         Historial laboral y experiencia.', 'contact            Canales de contacto directo.', 'calendar           Enlace para agendar una reunión.', 'play               Uso: play [juego]. Disponibles: sokoban, adventure.', 'play sokoban       Abrir minijuego Sokoban.', 'play adventure     Abrir aventura de texto interactiva.', 'curl parrot.live   Ejecutar loro ASCII animado.', 'sudo               Solicitar permisos de administrador.', 'clear / cls        Limpiar la pantalla.', 'exit / salir       Cerrar la terminal.']
@@ -30,40 +30,97 @@ const cloneBoard = (board: SokobanCell[][]) => board.map((row) => [...row])
 const createSokoban = (): SokobanState => ({ board: cloneBoard(SOKOBAN_LEVEL), player: { r: 3, c: 3 }, underPlayer: ' ', moves: 0, won: false })
 
 const ADVENTURE_ROOMS = {
-  terminal: { title: 'TERMINAL NODE', description: 'Una consola industrial parpadea frente a ti. Una puerta conduce al núcleo.', exits: { norte: 'core', n: 'core' } },
-  core: { title: 'CONTROL CORE', description: 'El núcleo contiene un panel verde y una tarjeta de acceso junto a la salida.', exits: { sur: 'terminal', s: 'terminal', este: 'archive', e: 'archive' } },
-  archive: { title: 'PROJECT ARCHIVE', description: 'Filas de registros describen sistemas IIoT, visión artificial y realidad aumentada.', exits: { oeste: 'core', o: 'core' } },
+  terminal: {
+    title: 'NODO TERMINAL',
+    description: 'Una consola industrial parpadea frente a ti. Una puerta conduce al núcleo de control.',
+    exits: { norte: 'core', n: 'core' },
+  },
+  core: {
+    title: 'NÚCLEO DE CONTROL',
+    description: 'El núcleo contiene un panel verde y una tarjeta de acceso junto a la salida hacia el archivo.',
+    exits: { sur: 'terminal', s: 'terminal', este: 'archive', e: 'archive' },
+  },
+  archive: {
+    title: 'ARCHIVO DE PROYECTOS',
+    description: 'Filas de registros describen sistemas IIoT, visión artificial y realidad aumentada.',
+    exits: { oeste: 'core', o: 'core' },
+  },
 } as const
+
 type AdventureRoom = keyof typeof ADVENTURE_ROOMS
 type AdventureState = { room: AdventureRoom; inventory: string[]; log: string[]; finished: boolean }
-const createAdventure = (): AdventureState => ({ room: 'terminal', inventory: [], log: ['ADVENTURE // INDUSTRIAL NODE', 'Escribe LOOK, NORTE, SUR, ESTE, OESTE, TAKE CARD, USE CARD o HELP.', '', ADVENTURE_ROOMS.terminal.description], finished: false })
+
+const createAdventure = (): AdventureState => ({
+  room: 'terminal',
+  inventory: [],
+  log: [
+    'AVENTURA // NODO INDUSTRIAL',
+    'Escribe AYUDA para ver los comandos disponibles.',
+    '',
+    ADVENTURE_ROOMS.terminal.description,
+  ],
+  finished: false,
+})
 
 function AdventureGame({ onExit }: { onExit: () => void }) {
   const [game, setGame] = useState<AdventureState>(createAdventure)
   const [command, setCommand] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => inputRef.current?.focus(), [])
+
   const execute = () => {
     const raw = command.trim().toLowerCase()
     if (!raw) return
+
     setGame((current) => {
       const room = ADVENTURE_ROOMS[current.room]
       let message = `> ${command}`
       const next: AdventureState = { ...current, inventory: [...current.inventory], log: [...current.log] }
-      if (raw === 'help' || raw === 'ayuda') message += '\nComandos: LOOK, NORTE/SUR/ESTE/OESTE, TAKE CARD, USE CARD, INVENTORY, RESET, EXIT.'
-      else if (raw === 'look' || raw === 'mirar') message += `\n${room.title}: ${room.description}`
-      else if (raw === 'inventory' || raw === 'inventario') message += `\nInventario: ${current.inventory.length ? current.inventory.join(', ') : 'vacío'}.`
-      else if (raw === 'reset') return createAdventure()
-      else if (raw === 'take card' || raw === 'tomar tarjeta') { if (current.room === 'core' && !current.inventory.includes('CARD')) { next.inventory.push('CARD'); message += '\nHas tomado la CARD de acceso.' } else message += '\nNo hay una CARD disponible aquí.' }
-      else if (raw === 'use card' || raw === 'usar tarjeta') { if (current.room === 'core' && current.inventory.includes('CARD')) { message += '\nACCESS GRANTED. El núcleo ha sido desbloqueado. Misión completada.'; next.finished = true } else message += '\nNo puedes usar la CARD aquí.' }
-      else if (raw === 'exit' || raw === 'salir') { onExit(); return current }
-      else { const destination = room.exits[raw as keyof typeof room.exits]; if (destination) { next.room = destination as AdventureRoom; message += `\nEntrando en ${ADVENTURE_ROOMS[destination as AdventureRoom].title}.\n${ADVENTURE_ROOMS[destination as AdventureRoom].description}` } else message += '\nComando no reconocido. Usa HELP.' }
+
+      if (raw === 'help' || raw === 'ayuda') {
+        message += '\nComandos: MIRAR, NORTE/SUR/ESTE/OESTE, TOMAR TARJETA, USAR TARJETA, INVENTARIO, REINICIAR, SALIR.'
+      } else if (raw === 'look' || raw === 'mirar' || raw === 'ver') {
+        message += `\n${room.title}: ${room.description}`
+      } else if (raw === 'inventory' || raw === 'inventario') {
+        message += `\nInventario: ${current.inventory.length ? current.inventory.join(', ') : 'vacío'}.`
+      } else if (raw === 'reset' || raw === 'reiniciar') {
+        return createAdventure()
+      } else if (raw === 'take card' || raw === 'tomar tarjeta' || raw === 'tomar tarjeta de acceso') {
+        if (current.room === 'core' && !current.inventory.includes('TARJETA')) {
+          next.inventory.push('TARJETA')
+          message += '\nHas tomado la tarjeta de acceso.'
+        } else {
+          message += '\nNo hay una tarjeta disponible aquí.'
+        }
+      } else if (raw === 'use card' || raw === 'usar tarjeta' || raw === 'usar tarjeta de acceso') {
+        if (current.room === 'core' && current.inventory.includes('TARJETA')) {
+          message += '\nACCESO CONCEDIDO. El núcleo ha sido desbloqueado. Misión completada.'
+          next.finished = true
+        } else {
+          message += '\nNo puedes usar la tarjeta aquí.'
+        }
+      } else if (raw === 'exit' || raw === 'salir') {
+        onExit()
+        return current
+      } else {
+        const destination = room.exits[raw as keyof typeof room.exits]
+        if (destination) {
+          next.room = destination as AdventureRoom
+          message += `\nEntrando en ${ADVENTURE_ROOMS[destination as AdventureRoom].title}.\n${ADVENTURE_ROOMS[destination as AdventureRoom].description}`
+        } else {
+          message += '\nComando no reconocido. Escribe AYUDA.'
+        }
+      }
+
       next.log.push(message)
       return next
     })
+
     setCommand('')
   }
-  return <div className="mt-3 border border-cyan/30 bg-black/70 p-3 text-sm text-cyan font-mono shadow-[0_0_24px_rgba(0,240,255,0.08)]"><div className="mb-3 flex items-center justify-between border-b border-cyan/20 pb-2"><span className="tracking-[0.18em] text-cyan">ADVENTURE // TEXT NODE</span><button onClick={onExit} className="border border-cyan/30 px-2 py-1 text-xs hover:bg-cyan/10" aria-label="Salir de Adventure"><X className="mr-1 inline h-3 w-3" /> SALIR</button></div><div className="mb-3 h-56 overflow-y-auto whitespace-pre-wrap leading-6">{game.log.map((line, index) => <div key={`${index}-${line.slice(0, 12)}`}>{line}</div>)}{game.finished && <div className="mt-2 text-primary text-glow">[MISSION COMPLETE]</div>}</div><div className="flex items-center gap-2 border-t border-cyan/20 pt-2"><span className="text-cyan">adventure@{game.room} $</span><input ref={inputRef} value={command} onChange={(event) => setCommand(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && execute()} className="min-w-0 flex-1 bg-transparent text-cyan outline-none" aria-label="Comando Adventure" autoComplete="off" spellCheck={false} /></div></div>
+
+  return <div className="mt-3 border border-cyan/30 bg-black/70 p-3 text-sm text-cyan font-mono shadow-[0_0_24px_rgba(0,240,255,0.08)]"><div className="mb-3 flex items-center justify-between border-b border-cyan/20 pb-2"><span className="tracking-[0.18em] text-cyan">AVENTURA // NODO DE TEXTO</span><button onClick={onExit} className="border border-cyan/30 px-2 py-1 text-xs hover:bg-cyan/10" aria-label="Salir de Aventura"><X className="mr-1 inline h-3 w-3" /> SALIR</button></div><div className="mb-3 h-56 overflow-y-auto whitespace-pre-wrap leading-6">{game.log.map((line, index) => <div key={`${index}-${line.slice(0, 12)}`}>{line}</div>)}{game.finished && <div className="mt-2 text-primary text-glow">[MISIÓN COMPLETADA]</div>}</div><div className="flex items-center gap-2 border-t border-cyan/20 pt-2"><span className="text-cyan">aventura@{game.room} $</span><input ref={inputRef} value={command} onChange={(event) => setCommand(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && execute()} className="min-w-0 flex-1 bg-transparent text-cyan outline-none" aria-label="Comando de Aventura" autoComplete="off" spellCheck={false} /></div></div>
 }
 
 function SokobanGame({ onExit }: { onExit: () => void }) {

@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${rajdhani.variable} ${jetbrainsMono.variable} bg-background`}
+      className={`${rajdhani.variable} ${jetbrainsMono.variable} light bg-background`}
     >
       <body className="font-sans antialiased hud-scanlines">
         {children}

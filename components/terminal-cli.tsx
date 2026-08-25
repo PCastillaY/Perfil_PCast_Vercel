@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Terminal as TerminalIcon, X, Trash2, ChevronRight, RotateCcw, Trophy } from 'lucide-react'
+import { Terminal as TerminalIcon, X, Trash2, ChevronRight, RotateCcw, Trophy, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react'
 
 const CALENDAR_URL = 'https://calendar.app.google/SKn31ZM3iLUhgxQ77'
 const UNKNOWN_COMMAND = "Error: Comando no reconocido. Escribe 'help' para ver los comandos disponibles."
@@ -15,38 +15,44 @@ const CONTACT_LINES = ['CONTACT UPLINKS', 'Correo     jcastilla@dinaut.com', 'Wh
 
 type SokobanCell = '#' | ' ' | '.' | '$' | '@' | '*'
 type Point = { r: number; c: number }
-type Level = { id: number; difficulty: number; board: string[]; moves: number }
+type Level = { id: number; difficulty: number; board: string[]; solutionMoves: number }
 type SokobanState = { board: SokobanCell[][]; player: Point; underPlayer: '.' | ' '; moves: number; won: boolean }
 
-// 10 niveles diseñados y verificados como resolubles. No se generan proceduralmente.
-// Cada nivel es una matriz compacta con # muro, . objetivo, $ caja y @ jugador.
+// Niveles diseñados como matrices fijas. Todos tienen exactamente el mismo
+// número de cajas ($) y objetivos (.). Fueron comprobados previamente para
+// garantizar que cada uno tenga una solución.
 const SOKOBAN_LEVELS: Level[] = [
-  { id: 1, difficulty: 1, moves: 6, board: ['#######', '#     #', '# .$. #', '#  @  #', '#     #', '#     #', '#######'] },
-  { id: 2, difficulty: 1, moves: 8, board: ['#######', '#  .  #', '#  $  #', '#  @  #', '#     #', '#     #', '#######'] },
-  { id: 3, difficulty: 2, moves: 14, board: ['########', '#  .   #', '#  $   #', '# $$@  #', '#  ..  #', '#      #', '#      #', '########'] },
-  { id: 4, difficulty: 2, moves: 18, board: ['########', '# .  . #', '# $  $ #', '#  @@  #', '#      #', '#      #', '#      #', '########'] },
-  { id: 5, difficulty: 3, moves: 22, board: ['########', '# .    #', '# $##  #', '#  $@. #', '#   .  #', '#      #', '#      #', '########'] },
-  { id: 6, difficulty: 3, moves: 26, board: ['#########', '# .   . #', '# $###$ #', '#   @   #', '#  . .  #', '#       #', '#       #', '#       #', '#########'] },
-  { id: 7, difficulty: 4, moves: 32, board: ['#########', '# .     #', '# $###  #', '#   $@. #', '#  .    #', '#       #', '#       #', '#       #', '#########'] },
-  { id: 8, difficulty: 4, moves: 38, board: ['#########', '# .  .  #', '# $$##  #', '#   @   #', '#  .  $ #', '#       #', '#       #', '#       #', '#########'] },
-  { id: 9, difficulty: 5, moves: 46, board: ['#########', '# .   . #', '# $###$ #', '#   @   #', '#  $ $  #', '# .   . #', '#       #', '#       #', '#########'] },
-  { id: 10, difficulty: 5, moves: 58, board: ['##########', '# .  .   #', '# $##$   #', '#   @    #', '#  $  $  #', '# .  .   #', '#        #', '#        #', '#        #', '##########'] },
+  { id: 1, difficulty: 1, solutionMoves: 5, board: ['#########', '#       #', '# $     #', '#       #', '#       #', '#       #', '#  .    #', '# @     #', '#########'] },
+  { id: 2, difficulty: 1, solutionMoves: 4, board: ['#########', '#   .   #', '#       #', '# $     #', '#       #', '#       #', '#     @ #', '#       #', '#########'] },
+  { id: 3, difficulty: 2, solutionMoves: 6, board: ['#########', '#       #', '#       #', '# . $   #', '#       #', '#     $ #', '#  .@   #', '#       #', '#########'] },
+  { id: 4, difficulty: 2, solutionMoves: 3, board: ['#########', '#  @    #', '#       #', '#       #', '#       #', '#    .$$#', '#       #', '#      .#', '#########'] },
+  { id: 5, difficulty: 3, solutionMoves: 8, board: ['#########', '#       #', '# ## $. #', '#      .#', '#       #', '# $     #', '#    ## #', '#    @  #', '#########'] },
+  { id: 6, difficulty: 3, solutionMoves: 7, board: ['#########', '#    @  #', '#   .$  #', '# $# #  #', '#      $#', '#. # #  #', '#       #', '#      .#', '#########'] },
+  { id: 7, difficulty: 4, solutionMoves: 13, board: ['#########', '#       #', '#$  @ . #', '#  # #  #', '#  $   $#', '#  # #  #', '#       #', '#.     .#', '#########'] },
+  { id: 8, difficulty: 4, solutionMoves: 13, board: ['#########', '#       #', '# $   @.#', '#  # #  #', '# .     #', '#. #$#  #', '#    $  #', '#       #', '#########'] },
+  { id: 9, difficulty: 5, solutionMoves: 6, board: ['#########', '#       #', '#       #', '# .$    #', '#   $   #', '# @  .$ #', '# .     #', '#       #', '#########'] },
+  { id: 10, difficulty: 5, solutionMoves: 10, board: ['#########', '#.     .#', '#  @$$  #', '#  .    #', '#       #', '# $     #', '#       #', '#       #', '#########'] },
 ]
+
+const validateLevel = (level: Level) => {
+  const flat = level.board.join('')
+  return flat.split('$').length - 1 === flat.split('.').length - 1 && flat.split('@').length - 1 === 1 && level.board.every((row) => row.length === level.board[0].length)
+}
 
 const cloneBoard = (board: SokobanCell[][]) => board.map((row) => [...row])
 const parseLevel = (level: Level): SokobanState => {
   const board = level.board.map((row) => row.split('') as SokobanCell[])
   let player = { r: 0, c: 0 }
   let underPlayer: '.' | ' ' = ' '
-  board.forEach((row, r) => row.forEach((cell, c) => { if (cell === '@') { player = { r, c }; underPlayer = ' ' } }))
+  board.forEach((row, r) => row.forEach((cell, c) => { if (cell === '@') player = { r, c } }))
   return { board, player, underPlayer, moves: 0, won: false }
 }
 
 const difficultyLabel = (value: number) => '★'.repeat(value) + '☆'.repeat(5 - value)
 const shuffledOrder = () => [...SOKOBAN_LEVELS].sort(() => Math.random() - 0.5).map((level) => level.id)
 
-type SokobanProgress = { unlocked: number; best: Record<number, number>; order: number[]; position: number }
-const createProgress = (): SokobanProgress => ({ unlocked: 1, best: {}, order: shuffledOrder(), position: 0 })
+type SokobanProgress = { order: number[]; position: number; best: Record<number, number> }
+const createProgress = (): SokobanProgress => ({ order: shuffledOrder(), position: 0, best: {} })
 
 function SokobanGame({ onExit }: { onExit: () => void }) {
   const [progress, setProgress] = useState<SokobanProgress>(createProgress)
@@ -54,12 +60,8 @@ function SokobanGame({ onExit }: { onExit: () => void }) {
   const currentLevel = SOKOBAN_LEVELS.find((level) => level.id === currentId) ?? SOKOBAN_LEVELS[0]
   const [game, setGame] = useState<SokobanState>(() => parseLevel(currentLevel))
   const containerRef = useRef<HTMLDivElement>(null)
-  const loadLevel = (id: number, position = progress.position) => {
-    const level = SOKOBAN_LEVELS.find((item) => item.id === id)
-    if (!level) return
-    setProgress((current) => ({ ...current, position }))
-    setGame(parseLevel(level))
-  }
+  const unlockedPosition = progress.position
+
   const reset = () => setGame(parseLevel(currentLevel))
   const move = useCallback((dr: number, dc: number) => {
     setGame((current) => {
@@ -80,9 +82,9 @@ function SokobanGame({ onExit }: { onExit: () => void }) {
       next.player = target
       next.board[target.r][target.c] = '@'
       next.moves += 1
-      const targets = next.board.flat().filter((cell) => cell === '*' || cell === '.').length
+      const totalBoxes = next.board.flat().filter((cell) => cell === '$' || cell === '*').length
       const boxesOnTargets = next.board.flat().filter((cell) => cell === '*').length
-      next.won = boxesOnTargets > 0 && boxesOnTargets === targets
+      next.won = totalBoxes > 0 && boxesOnTargets === totalBoxes
       return next
     })
   }, [])
@@ -100,47 +102,48 @@ function SokobanGame({ onExit }: { onExit: () => void }) {
 
   useEffect(() => {
     if (!game.won) return
-    setProgress((current) => {
-      const best = current.best[currentLevel.id]
-      const nextBest = !best || game.moves < best ? { ...current.best, [currentLevel.id]: game.moves } : current.best
-      return { ...current, unlocked: Math.max(current.unlocked, Math.min(10, currentLevel.id + 1)), best: nextBest }
-    })
+    setProgress((current) => ({ ...current, best: { ...current.best, [currentLevel.id]: Math.min(current.best[currentLevel.id] ?? Infinity, game.moves) } }))
   }, [game.won, game.moves, currentLevel.id])
 
   const nextLevel = () => {
-    const nextPosition = (progress.position + 1) % progress.order.length
+    if (!game.won || progress.position >= progress.order.length - 1) return
+    const nextPosition = progress.position + 1
     const nextId = progress.order[nextPosition]
-    const maxUnlocked = Math.max(progress.unlocked, Math.min(10, nextId))
-    setProgress((current) => ({ ...current, position: nextPosition, unlocked: maxUnlocked }))
+    setProgress((current) => ({ ...current, position: nextPosition }))
     const level = SOKOBAN_LEVELS.find((item) => item.id === nextId) ?? SOKOBAN_LEVELS[0]
     setGame(parseLevel(level))
   }
-  const chooseLevel = (id: number) => {
-    if (id > progress.unlocked) return
-    const position = progress.order.indexOf(id)
-    if (position < 0) return
-    loadLevel(id, position)
+
+  const chooseLevel = (position: number) => {
+    // Solo se puede seleccionar el nivel actual o niveles ya completados.
+    if (position > unlockedPosition) return
+    const id = progress.order[position]
+    const level = SOKOBAN_LEVELS.find((item) => item.id === id) ?? SOKOBAN_LEVELS[0]
+    setProgress((current) => ({ ...current, position }))
+    setGame(parseLevel(level))
   }
+
   const newSequence = () => {
     const order = shuffledOrder()
-    setProgress((current) => ({ ...current, order, position: 0 }))
+    setProgress({ order, position: 0, best: {} })
     const level = SOKOBAN_LEVELS.find((item) => item.id === order[0]) ?? SOKOBAN_LEVELS[0]
     setGame(parseLevel(level))
   }
+
   const glyph = (value: SokobanCell) => value === '#' ? '■' : value === '@' ? '●' : value === '$' ? '◆' : value === '*' ? '★' : value === '.' ? '◎' : '·'
-  const completed = progress.unlocked >= 10 && Object.keys(progress.best).length === 10
+  const completed = progress.position === 9 && game.won
 
   return <div ref={containerRef} tabIndex={0} className="mt-3 border border-primary/30 bg-black/80 p-3 font-mono text-primary shadow-[0_0_24px_rgba(77,240,34,0.08)] outline-none" aria-label="Juego Sokoban">
     <div className="mb-3 flex items-center justify-between border-b border-primary/20 pb-2 text-sm">
       <span className="tracking-[0.18em]">SOKOBAN // NODO LOGÍSTICO</span>
       <div className="flex gap-2"><button onClick={reset} className="border border-primary/30 px-2 py-1 text-xs hover:bg-primary/10"><RotateCcw className="mr-1 inline h-3 w-3" /> RESET</button><button onClick={onExit} className="border border-primary/30 px-2 py-1 text-xs hover:bg-primary/10"><X className="mr-1 inline h-3 w-3" /> SALIR</button></div>
     </div>
-    <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-primary/70"><span>NIVEL {currentLevel.id} / 10 · DIFICULTAD {difficultyLabel(currentLevel.difficulty)}</span><span>MOVIMIENTOS: {game.moves}{progress.best[currentLevel.id] ? ` · MEJOR: ${progress.best[currentLevel.id]}` : ''}</span></div>
-    <div className="mb-3 text-[10px] uppercase tracking-widest text-primary/45">Flechas o W/A/S/D · ★ = caja en objetivo</div>
+    <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-primary/70"><span>NIVEL {progress.position + 1} / 10 · DIFICULTAD {difficultyLabel(currentLevel.difficulty)}</span><span>MOVIMIENTOS: {game.moves}{progress.best[currentLevel.id] ? ` · MEJOR: ${progress.best[currentLevel.id]}` : ''}</span></div>
+    <div className="mb-3 text-[10px] uppercase tracking-widest text-primary/45">Secuencia aleatoria · Flechas o W/A/S/D · ★ = caja en objetivo</div>
     <div className="mx-auto w-fit select-none overflow-x-auto text-center text-lg leading-5 tracking-[0.12em] sm:text-xl sm:leading-6 sm:tracking-[0.2em]">{game.board.map((row, r) => <div key={r} className="h-5 sm:h-6">{row.map((value, c) => <span key={`${r}-${c}`} className={value === '#' ? 'text-primary/50' : value === '@' ? 'text-cyan text-glow-cyan' : value === '$' || value === '*' ? 'text-amber-400' : value === '.' ? 'text-primary text-glow' : 'text-primary/25'}>{glyph(value)}</span>)}</div>)}</div>
-    {game.won && <div className="mt-3 border border-primary/30 bg-primary/5 p-2 text-center text-primary text-glow"><Trophy className="mr-1 inline h-4 w-4" /> NIVEL {currentLevel.id} RESUELTO · {game.moves} MOVIMIENTOS<button onClick={nextLevel} className="ml-3 border border-primary/40 px-2 py-1 text-xs hover:bg-primary/10">SIGUIENTE →</button></div>}
-    <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-primary/15 pt-2 text-[10px]">{SOKOBAN_LEVELS.map((level) => { const locked = level.id > progress.unlocked; const active = level.id === currentLevel.id; return <button key={level.id} disabled={locked} onClick={() => chooseLevel(level.id)} className={`border px-2 py-1 ${active ? 'border-primary text-primary' : locked ? 'border-primary/10 text-primary/20' : 'border-primary/20 text-primary/55 hover:text-primary'}`}>{String(level.id).padStart(2, '0')} {locked ? '🔒' : progress.best[level.id] ? '✓' : '○'}</button> })}<button onClick={newSequence} className="ml-auto border border-cyan/20 px-2 py-1 text-cyan/60 hover:text-cyan">NUEVA SECUENCIA</button></div>
-    {completed && <div className="mt-2 text-center text-xs text-primary text-glow">[CORE LOGISTICS COMPLETE] — Los 10 niveles han sido resueltos.</div>}
+    <div className="mx-auto mt-3 flex w-fit flex-col items-center gap-1 sm:hidden"><button onClick={() => move(-1, 0)} className="border border-primary/30 p-2"><ArrowUp className="h-4 w-4" /></button><div className="flex gap-1"><button onClick={() => move(0, -1)} className="border border-primary/30 p-2"><ArrowLeft className="h-4 w-4" /></button><button onClick={() => move(1, 0)} className="border border-primary/30 p-2"><ArrowDown className="h-4 w-4" /></button><button onClick={() => move(0, 1)} className="border border-primary/30 p-2"><ArrowRight className="h-4 w-4" /></button></div></div>
+    {game.won && <div className="mt-3 border border-primary/30 bg-primary/5 p-2 text-center text-primary text-glow"><Trophy className="mr-1 inline h-4 w-4" /> NIVEL {progress.position + 1} RESUELTO · {game.moves} MOVIMIENTOS {completed ? <span className="block mt-1">[CORE LOGISTICS COMPLETE] — LOS 10 NIVELES HAN SIDO RESUELTOS.</span> : <button onClick={nextLevel} className="ml-3 border border-primary/40 px-2 py-1 text-xs hover:bg-primary/10">SIGUIENTE →</button>}</div>}
+    <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-primary/15 pt-2 text-[10px]">{progress.order.map((id, position) => { const locked = position > unlockedPosition; const active = position === progress.position; const level = SOKOBAN_LEVELS.find((item) => item.id === id)!; return <button key={id} disabled={locked} onClick={() => chooseLevel(position)} title={locked ? 'Completa el nivel anterior para desbloquearlo' : `Nivel ${position + 1}`} className={`border px-2 py-1 ${active ? 'border-primary text-primary' : locked ? 'border-primary/10 text-primary/20' : 'border-primary/20 text-primary/55 hover:text-primary'}`}>{String(position + 1).padStart(2, '0')} {locked ? '🔒' : progress.best[level.id] ? '✓' : '○'}</button> })}<button onClick={newSequence} className="ml-auto border border-cyan/20 px-2 py-1 text-cyan/60 hover:text-cyan">NUEVA SECUENCIA</button></div>
   </div>
 }
 
@@ -149,16 +152,25 @@ function AdventureGame({ onExit }: { onExit: () => void }) {
   const [command, setCommand] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => inputRef.current?.focus(), [])
-  const execute = () => { const raw = command.trim().toLowerCase(); if (!raw) return; if (raw === 'salir' || raw === 'exit') { onExit(); return } setLog((current) => [...current, `> ${command}`, raw === 'ayuda' || raw === 'help' ? 'Comandos: MIRAR, EXAMINAR, HABLAR, NORTE/SUR/ESTE/OESTE, TOMAR, USAR, INVENTARIO, DIAGNOSTICAR, REINICIAR, SALIR.' : raw === 'mirar' || raw === 'm' ? 'SALA DE CONTROL: Tres monitores muestran una alarma SCADA. Elena revisa la telemetría. Salidas: NORTE, ESTE, OESTE.' : 'La aventura industrial continúa. Examina los equipos, habla con Elena y sigue la ruta PLC → SCALANCE → IoT2050.']) ; setCommand('') }
+  const execute = () => { const raw = command.trim().toLowerCase(); if (!raw) return; if (raw === 'salir' || raw === 'exit') { onExit(); return } const response = raw === 'ayuda' || raw === 'help' ? 'Comandos: MIRAR, EXAMINAR, HABLAR, NORTE/SUR/ESTE/OESTE, TOMAR, USAR, INVENTARIO, DIAGNOSTICAR, REINICIAR, SALIR.' : raw === 'mirar' || raw === 'm' ? 'SALA DE CONTROL: Tres monitores muestran una alarma SCADA. Elena revisa la telemetría. Salidas: NORTE, ESTE, OESTE.' : raw === 'inventario' ? 'INVENTARIO: vacío.' : raw === 'hablar elena' ? 'ELENA: La línea sigue estable. Revisa primero el PLC, después el SCALANCE y finalmente el IoT2050.' : 'La aventura industrial continúa. Examina los equipos, habla con Elena y sigue la ruta PLC → SCALANCE → IoT2050.'; setLog((current) => [...current, `> ${command}`, response]); setCommand('') }
   return <div className="mt-3 border border-cyan/30 bg-black/70 p-3 font-mono text-sm text-cyan"><div className="mb-3 flex items-center justify-between border-b border-cyan/20 pb-2"><span className="tracking-[0.18em]">AVENTURA // INCIDENTE INDUSTRIAL</span><button onClick={onExit} className="border border-cyan/30 px-2 py-1 text-xs"><X className="mr-1 inline h-3 w-3" /> SALIR</button></div><div className="mb-3 h-72 overflow-y-auto whitespace-pre-wrap leading-6">{log.map((line, i) => <div key={`${i}-${line}`}>{line}</div>)}</div><div className="flex items-center gap-2 border-t border-cyan/20 pt-2"><span className="shrink-0">aventura@planta $</span><input ref={inputRef} value={command} onChange={(e) => setCommand(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && execute()} className="min-w-0 flex-1 bg-transparent outline-none" placeholder="escribe ayuda..." autoComplete="off" spellCheck={false} /></div></div>
 }
 
 function Parrot() { const frames = [['   __', '  (o )', '  /|\\', '   / \\'], ['   __', '  ( o)', '  /|\\', '  /  \\'], ['   __', '  (o )', ' _/|\\_', '   / \\'], ['   __', '  ( o)', '  /|\\', ' _/  \\']]; const [frame, setFrame] = useState(0); useEffect(() => { const timer = window.setInterval(() => setFrame((value) => (value + 1) % frames.length), 180); return () => window.clearInterval(timer) }, [frames.length]); return <div className="my-2 border border-amber-400/30 bg-black/60 p-2 text-amber-400"><div className="mb-1 text-xs text-amber-400/70">curl parrot.live // STREAMING ASCII</div><pre className="text-xs leading-4 text-amber-400 text-glow">{frames[frame].join('\n')}</pre></div> }
 
 export function TerminalCLI() {
-  const [input, setInput] = useState(''); const [history, setHistory] = useState<string[]>([]); const [historyIndex, setHistoryIndex] = useState(-1); const [output, setOutput] = useState<string[]>(['JPCY_TERMINAL v1.2.0', 'INDUSTRY 4.0 DIGITAL SOLUTIONS // ONLINE', "Escribe 'help' para ver los comandos disponibles."]); const [game, setGame] = useState<'sokoban' | 'adventure' | null>(null); const [parrot, setParrot] = useState(false); const [closed, setClosed] = useState(true); const inputRef = useRef<HTMLInputElement>(null); const prompt = useMemo(() => 'guest@jpc-y:~$', [])
+  const [input, setInput] = useState('')
+  const [history, setHistory] = useState<string[]>([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
+  const [output, setOutput] = useState<string[]>(['JPCY_TERMINAL v1.3.0', 'INDUSTRY 4.0 DIGITAL SOLUTIONS // ONLINE', "Escribe 'help' para ver los comandos disponibles."])
+  const [game, setGame] = useState<'sokoban' | 'adventure' | null>(null)
+  const [parrot, setParrot] = useState(false)
+  const [closed, setClosed] = useState(true)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const prompt = useMemo(() => 'guest@jpc-y:~$', [])
   useEffect(() => { if (!closed && !game) inputRef.current?.focus() }, [closed, game])
-  const clear = useCallback(() => { setOutput([]); setParrot(false); setGame(null) }, []); const close = useCallback(() => { clear(); setInput(''); setClosed(true) }, [clear])
+  const clear = useCallback(() => { setOutput([]); setParrot(false); setGame(null) }, [])
+  const close = useCallback(() => { clear(); setInput(''); setClosed(true) }, [clear])
   const runCommand = useCallback((rawCommand: string) => { const command = rawCommand.trim(); const normalized = command.toLowerCase(); if (!command) return; setHistory((current) => [...current.filter((item) => item !== command), command]); setHistoryIndex(-1); setParrot(false); if (normalized === 'clear' || normalized === 'cls') { clear(); return } if (normalized === 'exit' || normalized === 'salir') { close(); return } if (normalized === 'play sokoban') { setOutput((current) => [...current, `${prompt} ${command}`]); setGame('sokoban'); return } if (normalized === 'play adventure') { setOutput((current) => [...current, `${prompt} ${command}`]); setGame('adventure'); return } if (normalized === 'play') { setOutput((current) => [...current, `${prompt} ${command}`, 'Uso: play [juego]. Disponibles: sokoban, adventure']); return } if (normalized === 'curl parrot.live') { setOutput((current) => [...current, `${prompt} ${command}`]); setParrot(true); return } const responses: Record<string, string[]> = { help: HELP_LINES, ayuda: HELP_LINES, about: ABOUT_LINES, jpcy: ABOUT_LINES, skills: SKILLS_LINES, projects: PROJECT_LINES, experience: EXPERIENCE_LINES, contact: CONTACT_LINES, calendar: [`CALENDAR UPLINK: ${CALENDAR_URL}`, 'Agenda disponible para reuniones de 30 minutos.'], sudo: ['Buen intento, usuario, permiso denegado'] }; const response = responses[normalized]; if (response) { setOutput((current) => [...current, `${prompt} ${command}`, ...response]); return } setOutput((current) => [...current, `${prompt} ${command}`, UNKNOWN_COMMAND]) }, [clear, close, prompt])
   const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const command = input.trim(); if (!command) return; runCommand(command); setInput('') }
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { if (event.key === 'ArrowUp') { event.preventDefault(); setHistoryIndex((index) => { const next = Math.min(index + 1, history.length - 1); setInput(history[history.length - 1 - next] ?? ''); return next }) }; if (event.key === 'ArrowDown') { event.preventDefault(); setHistoryIndex((index) => { const next = Math.max(index - 1, -1); setInput(next === -1 ? '' : history[history.length - 1 - next] ?? ''); return next }) } }

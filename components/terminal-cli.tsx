@@ -4,9 +4,10 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 're
 import { Terminal as TerminalIcon, X, Trash2, ChevronRight, RotateCcw, Trophy, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react'
 
 const CALENDAR_URL = 'https://calendar.app.google/SKn31ZM3iLUhgxQ77'
+const ASSISTENTEML_URL = 'https://asistenteml.vercel.app/'
 const UNKNOWN_COMMAND = "Error: Comando no reconocido. Escribe 'help' para ver los comandos disponibles."
 
-const HELP_LINES = ['help / ayuda       Lista de comandos disponibles.', 'about / JPCY       Perfil profesional de J. P. Castilla.', 'skills             Stack tecnológico y competencias core.', 'projects           Proyectos principales y tecnologías.', 'experience         Historial laboral y experiencia.', 'contact            Canales de contacto directo.', 'calendar           Enlace para agendar una reunión.', 'play               Uso: play [juego]. Disponibles: sokoban, adventure.', 'play sokoban       Abrir minijuego Sokoban.', 'play adventure     Abrir aventura industrial en español.', 'curl parrot.live   Ejecutar loro ASCII animado.', 'sudo               Solicitar permisos de administrador.', 'clear / cls        Limpiar la pantalla.', 'exit / salir       Cerrar la terminal.']
+const HELP_LINES = ['help / ayuda       Lista de comandos disponibles.', 'about / JPCY       Perfil profesional de J. P. Castilla.', 'skills             Stack tecnológico y competencias core.', 'projects           Proyectos principales y tecnologías.', 'experience         Historial laboral y experiencia.', 'contact            Canales de contacto directo.', 'calendar           Enlace para agendar una reunión.', 'asistenteml        Abrir asistente para generar modelos de Machine Learning.', 'play               Uso: play [juego]. Disponibles: sokoban, adventure.', 'play sokoban       Abrir minijuego Sokoban.', 'play adventure     Abrir aventura industrial en español.', 'curl parrot.live   Ejecutar loro ASCII animado.', 'sudo               Solicitar permisos de administrador.', 'clear / cls        Limpiar la pantalla.', 'exit / salir       Cerrar la terminal.']
 const ABOUT_LINES = ['JPCY // JUAN PABLO CASTILLA YTURBE', 'Industry 4.0 & Digital Solutions Specialist', '', 'Diseño e implementación de ecosistemas digitales para industria pesada.', 'Especialización: IIoT, Visión Artificial, analítica avanzada, cloud monitoring', 'y experiencias de realidad aumentada para operación y mantenimiento.', 'También diseñador y desarrollador de videojuegos.']
 const SKILLS_LINES = ['CORE STACK', '01  IIoT / Industrial Digitalization', '02  ThingWorx / Insights Hub / Grafana', '03  Siemens PLC / TIA Portal / SCALANCE / IoT2050', '04  Python / Computer Vision / YOLO / OCR', '05  Node-RED / MQTT / APIs / Data Pipelines', '06  Next.js / React / TypeScript / Tailwind CSS', '07  Unity / Vuforia / AR / WebGL', '08  Cloud Monitoring / Industrial Analytics']
 const PROJECT_LINES = ['PROJECT DEPLOYMENTS', 'DINSync ID            IIoT / Node-RED / Industrial Data', 'Industrial Monitoring Grafana / Cloud / KPI / SCADA', 'Industrial AR         Unity / Vuforia / Digital Workflows', 'Computer Vision       Python / YOLO / OCR / Roboflow', 'Industrial Analytics  ThingWorx / Insights Hub / Analytics']
@@ -18,9 +19,6 @@ type Point = { r: number; c: number }
 type Level = { id: number; difficulty: number; board: string[]; solutionMoves: number }
 type SokobanState = { board: SokobanCell[][]; player: Point; underPlayer: '.' | ' '; moves: number; won: boolean }
 
-// Niveles diseñados como matrices fijas. Todos tienen exactamente el mismo
-// número de cajas ($) y objetivos (.). Fueron comprobados previamente para
-// garantizar que cada uno tenga una solución.
 const SOKOBAN_LEVELS: Level[] = [
   { id: 1, difficulty: 1, solutionMoves: 5, board: ['#########', '#       #', '# $     #', '#       #', '#       #', '#       #', '#  .    #', '# @     #', '#########'] },
   { id: 2, difficulty: 1, solutionMoves: 4, board: ['#########', '#   .   #', '#       #', '# $     #', '#       #', '#       #', '#     @ #', '#       #', '#########'] },
@@ -33,11 +31,6 @@ const SOKOBAN_LEVELS: Level[] = [
   { id: 9, difficulty: 5, solutionMoves: 6, board: ['#########', '#       #', '#       #', '# .$    #', '#   $   #', '# @  .$ #', '# .     #', '#       #', '#########'] },
   { id: 10, difficulty: 5, solutionMoves: 10, board: ['#########', '#.     .#', '#  @$$  #', '#  .    #', '#       #', '# $     #', '#       #', '#       #', '#########'] },
 ]
-
-const validateLevel = (level: Level) => {
-  const flat = level.board.join('')
-  return flat.split('$').length - 1 === flat.split('.').length - 1 && flat.split('@').length - 1 === 1 && level.board.every((row) => row.length === level.board[0].length)
-}
 
 const cloneBoard = (board: SokobanCell[][]) => board.map((row) => [...row])
 const parseLevel = (level: Level): SokobanState => {
@@ -115,7 +108,6 @@ function SokobanGame({ onExit }: { onExit: () => void }) {
   }
 
   const chooseLevel = (position: number) => {
-    // Solo se puede seleccionar el nivel actual o niveles ya completados.
     if (position > unlockedPosition) return
     const id = progress.order[position]
     const level = SOKOBAN_LEVELS.find((item) => item.id === id) ?? SOKOBAN_LEVELS[0]
@@ -171,7 +163,7 @@ export function TerminalCLI() {
   useEffect(() => { if (!closed && !game) inputRef.current?.focus() }, [closed, game])
   const clear = useCallback(() => { setOutput([]); setParrot(false); setGame(null) }, [])
   const close = useCallback(() => { clear(); setInput(''); setClosed(true) }, [clear])
-  const runCommand = useCallback((rawCommand: string) => { const command = rawCommand.trim(); const normalized = command.toLowerCase(); if (!command) return; setHistory((current) => [...current.filter((item) => item !== command), command]); setHistoryIndex(-1); setParrot(false); if (normalized === 'clear' || normalized === 'cls') { clear(); return } if (normalized === 'exit' || normalized === 'salir') { close(); return } if (normalized === 'play sokoban') { setOutput((current) => [...current, `${prompt} ${command}`]); setGame('sokoban'); return } if (normalized === 'play adventure') { setOutput((current) => [...current, `${prompt} ${command}`]); setGame('adventure'); return } if (normalized === 'play') { setOutput((current) => [...current, `${prompt} ${command}`, 'Uso: play [juego]. Disponibles: sokoban, adventure']); return } if (normalized === 'curl parrot.live') { setOutput((current) => [...current, `${prompt} ${command}`]); setParrot(true); return } const responses: Record<string, string[]> = { help: HELP_LINES, ayuda: HELP_LINES, about: ABOUT_LINES, jpcy: ABOUT_LINES, skills: SKILLS_LINES, projects: PROJECT_LINES, experience: EXPERIENCE_LINES, contact: CONTACT_LINES, calendar: [`CALENDAR UPLINK: ${CALENDAR_URL}`, 'Agenda disponible para reuniones de 30 minutos.'], sudo: ['Buen intento, usuario, permiso denegado'] }; const response = responses[normalized]; if (response) { setOutput((current) => [...current, `${prompt} ${command}`, ...response]); return } setOutput((current) => [...current, `${prompt} ${command}`, UNKNOWN_COMMAND]) }, [clear, close, prompt])
+  const runCommand = useCallback((rawCommand: string) => { const command = rawCommand.trim(); const normalized = command.toLowerCase(); if (!command) return; setHistory((current) => [...current.filter((item) => item !== command), command]); setHistoryIndex(-1); setParrot(false); if (normalized === 'clear' || normalized === 'cls') { clear(); return } if (normalized === 'exit' || normalized === 'salir') { close(); return } if (normalized === 'asistenteml') { setOutput((current) => [...current, `${prompt} ${command}`, 'ASISTENTEML UPLINK: Opening Machine Learning model generator...']); window.open(ASSISTENTEML_URL, '_blank', 'noopener,noreferrer'); return } if (normalized === 'play sokoban') { setOutput((current) => [...current, `${prompt} ${command}`]); setGame('sokoban'); return } if (normalized === 'play adventure') { setOutput((current) => [...current, `${prompt} ${command}`]); setGame('adventure'); return } if (normalized === 'play') { setOutput((current) => [...current, `${prompt} ${command}`, 'Uso: play [juego]. Disponibles: sokoban, adventure']); return } if (normalized === 'curl parrot.live') { setOutput((current) => [...current, `${prompt} ${command}`]); setParrot(true); return } const responses: Record<string, string[]> = { help: HELP_LINES, ayuda: HELP_LINES, about: ABOUT_LINES, jpcy: ABOUT_LINES, skills: SKILLS_LINES, projects: PROJECT_LINES, experience: EXPERIENCE_LINES, contact: CONTACT_LINES, calendar: [`CALENDAR UPLINK: ${CALENDAR_URL}`, 'Agenda disponible para reuniones de 30 minutos.'], sudo: ['Buen intento, usuario, permiso denegado'] }; const response = responses[normalized]; if (response) { setOutput((current) => [...current, `${prompt} ${command}`, ...response]); return } setOutput((current) => [...current, `${prompt} ${command}`, UNKNOWN_COMMAND]) }, [clear, close, prompt])
   const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const command = input.trim(); if (!command) return; runCommand(command); setInput('') }
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { if (event.key === 'ArrowUp') { event.preventDefault(); setHistoryIndex((index) => { const next = Math.min(index + 1, history.length - 1); setInput(history[history.length - 1 - next] ?? ''); return next }) }; if (event.key === 'ArrowDown') { event.preventDefault(); setHistoryIndex((index) => { const next = Math.max(index - 1, -1); setInput(next === -1 ? '' : history[history.length - 1 - next] ?? ''); return next }) } }
   if (closed) return <section className="border-t border-primary/20 bg-[#050807] px-4 py-3 font-mono"><button onClick={() => setClosed(false)} className="group flex w-full items-center justify-between border border-primary/25 bg-black/60 px-4 py-3 text-left text-primary transition hover:border-primary/60 hover:bg-primary/5"><span><TerminalIcon className="mr-2 inline h-4 w-4" /> TERMINAL OFFLINE</span><span className="text-xs text-primary/60">[ OPEN CLI ]</span></button></section>
